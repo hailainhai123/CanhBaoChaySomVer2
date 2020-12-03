@@ -1,6 +1,6 @@
 # health_care
 
-A new Flutter application.
+A new HealthCare UI application
 
 ## Getting Started
 
