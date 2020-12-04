@@ -203,15 +203,13 @@ class _DetailPageState extends State<DetailPage>
       height: 40,
       child: Row(
         children: [
-          buildTextLabel('STT', 1),
+          buildTextLabel('STT', 3),
           verticalLine(),
-          buildTextLabel('Tên', 5),
+          buildTextLabel('Tên', 15),
           verticalLine(),
-          buildTextLabel('G', 1),
+          buildTextLabel('G', 2),
           verticalLine(),
-          buildTextLabel('P', 1),
-          verticalLine(),
-          buildTextLabel('K', 1),
+          buildTextLabel('P', 2),
           verticalLine(),
           buildTempColumn(),
         ],
@@ -221,7 +219,7 @@ class _DetailPageState extends State<DetailPage>
 
   Widget buildTempColumn() {
     return Expanded(
-      flex: 2,
+      flex: 4,
       child: Image.asset(
         'assets/images/thermometer.png',
         width: 20,
@@ -246,23 +244,22 @@ class _DetailPageState extends State<DetailPage>
 
   Widget itemView(int index) {
     return Container(
+      padding: const EdgeInsets.symmetric(vertical: 1),
       child: Column(
         children: [
           Container(
             height: 40,
             child: Row(
               children: [
-                buildTextData('${index + 1}', 1),
+                buildTextData('${index + 1}', 3),
                 verticalLine(),
-                buildTextData('Nguyễn Văn Aaaaaaaaaa', 5),
+                buildTextData('Nguyễn Văn Aaaaaaaaaa', 15),
                 verticalLine(),
-                buildTextData('1', 1),
+                buildTextData('1', 2),
                 verticalLine(),
-                buildTextData('2', 1),
+                buildTextData('2', 2),
                 verticalLine(),
-                buildTextData('3', 1),
-                verticalLine(),
-                tempData('38', 2),
+                tempData('38', 4),
               ],
             ),
           ),

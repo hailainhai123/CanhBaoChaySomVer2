@@ -94,10 +94,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       child: Column(
         children: <Widget>[
           Container(
-              height: 60,
+              height: 50,
               width: MediaQuery.of(context).size.width - 40,
-              padding: EdgeInsets.all(20),
-              margin: EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.all(10),
+              margin: EdgeInsets.symmetric(vertical: 5),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15), color: color),
               child: Row(
@@ -148,10 +148,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       child: Column(
         children: <Widget>[
           Container(
-              height: 60,
+              height: 50,
               width: MediaQuery.of(context).size.width - 40,
-              padding: EdgeInsets.all(20),
-              margin: EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.all(10),
+              margin: EdgeInsets.symmetric(vertical: 5),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15), color: color),
               child: Row(
