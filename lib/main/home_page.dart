@@ -101,31 +101,7 @@ class _HomePageState extends State<HomePage>
         false;
   }
 
-  Widget _backButton() {
-    return InkWell(
-      onTap: () {
-        _onWillPop();
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        child: Row(
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(left: 0, top: 10, bottom: 10),
-              child: Icon(Icons.keyboard_arrow_left, color: Colors.white),
-            ),
-            // Text('Back',
-            //     style: TextStyle(
-            //         fontSize: 16,
-            //         fontWeight: FontWeight.w500,
-            //         color: Colors.white))
-          ],
-        ),
-      ),
-    );
-  }
-
-  void initOneSignal(oneSignalAppId) async{
+  void initOneSignal(oneSignalAppId) async {
     var status = await OneSignal.shared.getPermissionSubscriptionState();
     var playerId = status.subscriptionStatus.userId;
 
@@ -157,6 +133,9 @@ class _HomePageState extends State<HomePage>
 
     iduser = response.message;
     homes = response.id.map((e) => Home.fromJson(e)).toList();
+    for (int i = 0; i < 20; i++) {
+      homes.add(homes[0]);
+    }
     print('_HomePageState.initState: ${homes.length}');
   }
 

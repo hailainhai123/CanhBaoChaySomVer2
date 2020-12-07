@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:health_care/device/add_device_page.dart';
 import 'package:health_care/main/detail_page.dart';
 import 'package:health_care/main/home_page.dart';
+import 'package:health_care/main/user_list_screen.dart';
 import 'package:health_care/main/user_profile_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,14 +22,47 @@ class _HomeScreenState extends State<HomeScreen> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static List<Widget> _widgetOptions;
+  static List<BottomNavigationBarItem> bottomBarItems;
 
   @override
   void initState() {
     print('_HomeScreenState.initState: $loginResponse');
-    _widgetOptions = <Widget>[
-      HomePage(
-        loginResponse: loginResponse,
+    loginResponse['quyen'] = 0;
+
+    initBottomBarItems(0);
+    initWidgetOptions(0);
+
+    super.initState();
+  }
+
+  void initBottomBarItems(int quyen) {
+    bottomBarItems = [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.details),
+        label: 'Cảnh báo',
       ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.menu),
+        label: 'Danh sách',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.add),
+        label: 'Thêm',
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.account_box_outlined),
+        label: 'Cá nhân',
+      ),
+    ];
+  }
+
+  void initWidgetOptions(int quyen) {
+    _widgetOptions = <Widget>[
+      loginResponse['quyen'] == 1
+          ? HomePage(
+              loginResponse: loginResponse,
+            )
+          : UserListScreen(),
       DetailPage(
         loginResponse: loginResponse,
       ),
@@ -40,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       UserProfilePage(),
     ];
-    super.initState();
   }
 
   void _onItemTapped(int index) {
@@ -79,24 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: BottomNavigationBar(
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.details),
-            label: 'Detail',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Add',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_box_outlined),
-            label: 'Profile',
-          ),
-        ],
+        items: bottomBarItems,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.white,
         onTap: _onItemTapped,
