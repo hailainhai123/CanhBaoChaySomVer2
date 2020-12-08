@@ -1,42 +1,48 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:health_care/dialogWidget/edit_device_dialog.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
-import 'file:///D:/KhanhLH/health_care/lib/dialogWidget/edit_user_dialog.dart';
-import 'package:health_care/model/user.dart';
+import 'package:health_care/model/device.dart';
 
 import '../helper/constants.dart' as Constants;
 
-class UserListScreen extends StatefulWidget {
+class DeviceListScreen extends StatefulWidget {
   @override
-  _UserListScreenState createState() => _UserListScreenState();
+  _DeviceListScreenState createState() => _DeviceListScreenState();
 }
 
-class _UserListScreenState extends State<UserListScreen> {
-  List<User> users = List();
-  User user = User(
+class _DeviceListScreenState extends State<DeviceListScreen> {
+  Device device = Device(
+    '_id',
+    'iduser',
+    'idnha',
+    'idphong',
+    'Thiết bị 1',
+    'IVNR1000001',
+    'Thân nhiệt',
+    'Bật',
     'mac',
-    'lek21197@gmail.com',
-    'pass',
-    'Lê Hồng Khánhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
-    'sdt',
-    'nha',
   );
+  List<Device> devices = List();
   MQTTClientWrapper mqttClientWrapper;
 
   @override
   void initState() {
-    initMqtt();
     for (int i = 0; i < 100; i++) {
-      users.add(user);
+      if (i.isEven) {
+        device.isEnable = true;
+      } else {
+        device.isEnable = false;
+      }
+      devices.add(device);
     }
-    print('_UserListScreenState.initState');
     super.initState();
   }
 
   Future<void> initMqtt() async {
     mqttClientWrapper = MQTTClientWrapper(
-        () => print('Success'), (message) => handleUser(message));
+        () => print('Success'), (message) => handleDevice(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
   }
 
@@ -68,7 +74,7 @@ class _UserListScreenState extends State<UserListScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Danh sách tài khoản'),
+          title: Text('Danh sách thiết bị'),
           centerTitle: true,
         ),
         body: buildBody(),
@@ -97,9 +103,13 @@ class _UserListScreenState extends State<UserListScreen> {
         children: [
           buildTextLabel('STT', 1),
           verticalLine(),
-          buildTextLabel('Username', 4),
-          verticalLine(),
           buildTextLabel('Tên', 4),
+          verticalLine(),
+          buildTextLabel('Mã', 4),
+          verticalLine(),
+          buildTextLabel('Loại', 2),
+          verticalLine(),
+          buildTextLabel('Trạng thái', 2),
         ],
       ),
     );
@@ -122,7 +132,7 @@ class _UserListScreenState extends State<UserListScreen> {
         child: ListView.builder(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
-          itemCount: users.length,
+          itemCount: devices.length,
           itemBuilder: (context, index) {
             return itemView(index);
           },
@@ -142,10 +152,10 @@ class _UserListScreenState extends State<UserListScreen> {
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditUserDialog(
-                    user: users[index],
+                  child: EditDeviceDialog(
+                    device: devices[index],
                     callback: (param) => {
-                      removeUser(index),
+                      removeDevice(index),
                     },
                   ),
                 ),
@@ -162,9 +172,13 @@ class _UserListScreenState extends State<UserListScreen> {
                 children: [
                   buildTextData('${index + 1}', 1),
                   verticalLine(),
-                  buildTextData(users[index].email, 4),
+                  buildTextData(devices[index].tentbDecode, 4),
                   verticalLine(),
-                  buildTextData(users[index].ten, 4),
+                  buildTextData(devices[index].matb, 4),
+                  verticalLine(),
+                  buildTextData(devices[index].loaitb, 2),
+                  verticalLine(),
+                  buildTextData(devices[index].trangthai, 2),
                 ],
               ),
             ),
@@ -175,13 +189,6 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  void removeUser(int index) async {
-    setState(() {
-      users.remove(index);
-      print('_UserListScreenState.removeUser ${users.length}');
-    });
-  }
-
   Widget buildTextData(String data, int flexValue) {
     return Expanded(
       child: Text(
@@ -189,6 +196,29 @@ class _UserListScreenState extends State<UserListScreen> {
         style: TextStyle(fontSize: 18),
         textAlign: TextAlign.center,
       ),
+      flex: flexValue,
+    );
+  }
+
+  Widget buildStatusDevice(bool data, int flexValue) {
+    return Expanded(
+      child: data
+          ? Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.green,
+              ),
+            )
+          : Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.red,
+              ),
+            ),
       flex: flexValue,
     );
   }
@@ -209,5 +239,17 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  void handleUser(String message) {}
+  void removeDevice(int index) async {
+    setState(() {
+      devices.remove(index);
+    });
+  }
+
+  void handleDevice(String message) {}
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
 }

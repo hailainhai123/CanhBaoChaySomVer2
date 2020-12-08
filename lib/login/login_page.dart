@@ -10,6 +10,7 @@ import 'package:health_care/main/home_screen.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/response/device_response.dart';
 import 'package:health_care/singup/signup.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
@@ -52,11 +53,35 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     initMqtt();
+    initOneSignal(Constants.one_signal_app_id);
     // mqttClientWrapper =
     //     MQTTClientWrapper(() => print('Success'), (message) => login(message));
     // mqttClientWrapper.prepareMqttClient(Constants.mac);
     sharedPrefsHelper = SharedPrefsHelper();
     getSharedPrefs();
+  }
+
+  void initOneSignal(oneSignalAppId) async {
+    var status = await OneSignal.shared.getPermissionSubscriptionState();
+    var playerId = status.subscriptionStatus.userId;
+
+    var settings = {
+      OSiOSSettings.autoPrompt: true,
+      OSiOSSettings.inAppLaunchUrl: true
+    };
+    OneSignal.shared.init(oneSignalAppId, iOSSettings: settings);
+    OneSignal.shared
+        .setInFocusDisplayType(OSNotificationDisplayType.notification);
+// will be called whenever a notification is received
+    OneSignal.shared
+        .setNotificationReceivedHandler((OSNotification notification) {
+      print('Received: ' + notification?.payload?.body ?? '');
+    });
+// will be called whenever a notification is opened/button pressed.
+    OneSignal.shared
+        .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
+      print('Opened: ' + result.notification?.payload?.body ?? '');
+    });
   }
 
   Future<void> initMqtt() async {
@@ -418,44 +443,53 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
-        body: Container(
-      height: height,
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-              top: -height * .15,
-              right: -MediaQuery.of(context).size.width * .4,
-              child: BezierContainer()),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(height: height * .2),
-                  _title(),
-                  SizedBox(height: 50),
-                  _emailPasswordWidget(),
-                  // _saveSwitch(),
-                  _submitButton(),
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.centerRight,
-                    child: Text('Quên mật khẩu ?',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500)),
-                  ),
-                  _divider(),
-                  _facebookButton(),
-                  _createAccountLabel(),
-                ],
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(FocusNode());
+        },
+        child: Container(
+          height: height,
+          child: Stack(
+            children: <Widget>[
+              Positioned(
+                top: -height * .15,
+                right: -MediaQuery.of(context).size.width * .4,
+                child: BezierContainer(),
               ),
-            ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(height: height * .2),
+                      _title(),
+                      SizedBox(height: 50),
+                      _emailPasswordWidget(),
+                      // _saveSwitch(),
+                      _submitButton(),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        alignment: Alignment.centerRight,
+                        child: Text('Quên mật khẩu ?',
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500)),
+                      ),
+                      _divider(),
+                      _facebookButton(),
+                      _createAccountLabel(),
+                    ],
+                  ),
+                ),
+              ),
+              // Positioned(top: 40, left: 0, child: _backButton()),
+            ],
           ),
-          // Positioned(top: 40, left: 0, child: _backButton()),
-        ],
+        ),
       ),
-    ));
+    );
   }
 }

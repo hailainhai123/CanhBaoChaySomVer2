@@ -12,6 +12,10 @@ import 'package:health_care/response/user_response.dart';
 import '../helper/constants.dart' as Constants;
 
 class UserProfilePage extends StatefulWidget {
+  final String quyen;
+
+  const UserProfilePage({Key key, this.quyen}) : super(key: key);
+
   @override
   _UserProfilePageState createState() => _UserProfilePageState();
 }
@@ -303,8 +307,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         null),
                     _editContainer(
                         'Sửa thông tin', Color(0xffffffff), Icon(Icons.edit)),
-                    _placeContainer(
-                        'Thêm tài khoản', Color(0xffffffff), Icon(Icons.add)),
+                    int.parse(widget.quyen) == 0
+                        ? _placeContainer('Thêm tài khoản', Color(0xffffffff),
+                            Icon(Icons.add))
+                        : Container(),
                     _logoutContainer(
                         'Đăng xuất',
                         Color(0xffffffff),
@@ -343,7 +349,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
             gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [Color(0xfffbb448), Color(0xfff7892b)])),
+                colors: [
+                  Colors.blueAccent,
+                  Colors.blue,
+                ])),
         child: Text(
           text,
           style: TextStyle(fontSize: 20, color: Colors.white),

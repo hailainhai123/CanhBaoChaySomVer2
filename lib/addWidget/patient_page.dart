@@ -21,8 +21,17 @@ class PatientPage extends StatefulWidget {
 class _PatientPageState extends State<PatientPage> {
   MQTTClientWrapper mqttClientWrapper;
   User registerUser;
-  Patient tempPatient =
-      Patient('BN11021', 'Tên bệnh nhân', '099999999', 'Sốt Virus');
+  Patient tempPatient = Patient(
+    'BN11021',
+    'Tên bệnh nhân',
+    '099999999',
+    'Sốt Virus',
+    '',
+    '',
+    '',
+    '',
+    '',
+  );
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _idController = TextEditingController();
@@ -35,9 +44,9 @@ class _PatientPageState extends State<PatientPage> {
   @override
   void initState() {
     _idController.text = tempPatient.id;
-    _nameController.text = tempPatient.name;
-    _informationController.text = tempPatient.information;
-    _phoneNumberController.text = tempPatient.phoneNumber;
+    _nameController.text = tempPatient.ten;
+    _informationController.text = tempPatient.matb;
+    _phoneNumberController.text = tempPatient.sdt;
 
     mqttClientWrapper = MQTTClientWrapper(
         () => print('Success'), (message) => register(message));

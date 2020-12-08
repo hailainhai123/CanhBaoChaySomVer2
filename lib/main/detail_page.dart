@@ -5,13 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:health_care/device/edit_page.dart';
+import 'package:health_care/dialogWidget/edit_patient_dialog.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/model/department.dart';
 import 'package:health_care/model/device.dart';
 import 'package:health_care/model/home.dart';
+import 'package:health_care/model/patient.dart';
 import 'package:health_care/model/room.dart';
 import 'package:health_care/response/device_response.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
@@ -46,6 +47,7 @@ class _DetailPageState extends State<DetailPage>
   DeviceResponse response;
   int homeAction = 2;
   int deletePosition = 0;
+  List<Patient> patients = List();
 
   MQTTClientWrapper mqttClientWrapper;
 
@@ -125,36 +127,49 @@ class _DetailPageState extends State<DetailPage>
     );
   }
 
-  void initOneSignal(oneSignalAppId) {
-    var settings = {
-      OSiOSSettings.autoPrompt: true,
-      OSiOSSettings.inAppLaunchUrl: true
-    };
-    OneSignal.shared.init(oneSignalAppId, iOSSettings: settings);
-    OneSignal.shared
-        .setInFocusDisplayType(OSNotificationDisplayType.notification);
-// will be called whenever a notification is received
-    OneSignal.shared
-        .setNotificationReceivedHandler((OSNotification notification) {
-      print('Received: ' + notification?.payload?.body ?? '');
-    });
-// will be called whenever a notification is opened/button pressed.
-    OneSignal.shared
-        .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      print('Opened: ' + result.notification?.payload?.body ?? '');
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     initMqtt();
-    initOneSignal(Constants.one_signal_app_id);
     response = DeviceResponse.fromJson(loginResponse);
 
     iduser = response.message;
     homes = response.id.map((e) => Home.fromJson(e)).toList();
     print('_HomePageState.initState: ${homes.length}');
+    initPatientTest();
+  }
+
+  void initPatientTest() {
+    Patient patient = Patient(
+      'id',
+      'Lê Hồng Khánh',
+      '0963003197',
+      'Hà Nội',
+      'IVNR1000001',
+      '1',
+      '5',
+      'Sốt Virus',
+      '37.5',
+    );
+
+    for (int i = 0; i < 100; i++) {
+      print('_DetailPageState.initPatientTest ${i % 3}');
+      switch (i % 3) {
+        case 0:
+          patient.nhietdo = '37';
+          break;
+        case 1:
+          patient.nhietdo = '37.5';
+          break;
+        case 2:
+          patient.nhietdo = '38.5';
+          break;
+        default:
+          patient.nhietdo = '0';
+      }
+      print('_DetailPageState.initPatientTest : ${patient.nhietdo}');
+      patients.add(patient);
+    }
   }
 
   Future<void> initMqtt() async {
@@ -179,7 +194,7 @@ class _DetailPageState extends State<DetailPage>
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text('Tổng hợp'),
+          title: Text('Danh sách'),
           centerTitle: true,
         ),
         body: Container(
@@ -231,40 +246,66 @@ class _DetailPageState extends State<DetailPage>
 
   Widget buildListView() {
     return Container(
-      child: ListView.builder(
-        scrollDirection: Axis.vertical,
-        shrinkWrap: true,
-        itemCount: homes.length,
-        itemBuilder: (context, index) {
-          return itemView(index);
-        },
+      child: Expanded(
+        child: ListView.builder(
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true,
+          itemCount: patients.length,
+          itemBuilder: (context, index) {
+            return itemView(index);
+          },
+        ),
       ),
     );
   }
 
   Widget itemView(int index) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 1),
-      child: Column(
-        children: [
-          Container(
-            height: 40,
-            child: Row(
-              children: [
-                buildTextData('${index + 1}', 3),
-                verticalLine(),
-                buildTextData('Nguyễn Văn Aaaaaaaaaa', 15),
-                verticalLine(),
-                buildTextData('1', 2),
-                verticalLine(),
-                buildTextData('2', 2),
-                verticalLine(),
-                tempData('38', 4),
-              ],
+    return InkWell(
+      onTap: () async {
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                //this right here
+                child: Container(
+                  child: EditPatientDialog(
+                    patient: patients[index],
+                    callback: (param) => {
+                      removePatient(index),
+                    },
+                  ),
+                ),
+              );
+            });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 1),
+        child: Column(
+          children: [
+            Container(
+              color: double.parse(patients[index].nhietdo) > 38.5
+                  ? Colors.yellow
+                  : Colors.transparent,
+              height: 40,
+              child: Row(
+                children: [
+                  buildTextData('${index + 1}', 3),
+                  verticalLine(),
+                  buildTextData(patients[index].ten, 15),
+                  verticalLine(),
+                  buildTextData(patients[index].giuong, 2),
+                  verticalLine(),
+                  buildTextData(patients[index].phong, 2),
+                  verticalLine(),
+                  tempData(patients[index].nhietdo, 4),
+                ],
+              ),
             ),
-          ),
-          horizontalLine(),
-        ],
+            horizontalLine(),
+          ],
+        ),
       ),
     );
   }
@@ -312,212 +353,6 @@ class _DetailPageState extends State<DetailPage>
     return Container(height: 1, width: double.infinity, color: Colors.grey);
   }
 
-  Widget _applianceGrid(List<Home> homes, double newheight) {
-    return Container(
-        alignment: Alignment.topCenter,
-        // padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-        height: newheight - 150,
-        child: GridView.count(
-          crossAxisCount: 2,
-          childAspectRatio: 1.3,
-          padding: EdgeInsets.all(5),
-          children: List.generate(homes.length, (index) {
-            return homes.isNotEmpty
-                ? _buildApplianceCard(homes, index)
-                : Container(
-                    height: 120,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50),
-                    margin: index % 3 == 0
-                        ? EdgeInsets.fromLTRB(15, 7.5, 7.5, 7.5)
-                        : EdgeInsets.fromLTRB(7.5, 7.5, 15, 7.5),
-                    decoration: BoxDecoration(
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                              blurRadius: 10,
-                              offset: Offset(0, 10),
-                              color: Color(0xfff1f0f2))
-                        ],
-                        color: Colors.white,
-                        border: Border.all(
-                            width: 1,
-                            style: BorderStyle.solid,
-                            color: Color(0xffa3a3a3)),
-                        borderRadius: BorderRadius.circular(20)),
-                    child: FloatingActionButton(
-                      heroTag: 'btn2',
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {},
-                    ),
-                  );
-          }),
-        ));
-  }
-
-  Widget _buildApplianceCard(List<Home> homes, int index) {
-    return GestureDetector(
-      child: InkWell(
-        child: Container(
-          height: 200,
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          margin: index % 2 == 0
-              ? EdgeInsets.fromLTRB(5, 5, 5, 5)
-              : EdgeInsets.fromLTRB(5, 5, 5, 5),
-          decoration: BoxDecoration(
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black87,
-                  blurRadius: 2.0,
-                  spreadRadius: 0.0,
-                  offset: Offset(1.0, 1.0),
-                )
-              ],
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white, Colors.white]),
-              borderRadius: BorderRadius.circular(20)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Image.asset(
-                    'assets/images/pharmacy.png',
-                    width: 30,
-                    height: 30,
-                    color: Colors.red,
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.edit, size: 35),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20.0)),
-                              //this right here
-                              child: Container(
-                                height: 160,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Vui lòng chọn',
-                                      ),
-                                      SizedBox(height: 15),
-                                      SizedBox(
-                                        width: 320.0,
-                                        child: RaisedButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop(this);
-                                            _navigateEditPage(
-                                                Constants.EDIT_HOME, index);
-                                          },
-                                          child: Text(
-                                            "Sửa thông tin",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          color: const Color(0xFF1BC0C5),
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 320.0,
-                                        child: RaisedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              print('Item OnLongPressed');
-                                              Navigator.of(context).pop(false);
-                                              _deleteHome(homes[index]);
-                                              deletePosition = index;
-                                            });
-                                          },
-                                          child: Text(
-                                            "Xóa",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ),
-                                          color: const Color(0xFF1BC0C5),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          });
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              // Text(
-              //   '${rooms[index].numberOfDevices} bệnh nhân',
-              //   style: TextStyle(
-              //       color: rooms[index].isEnable
-              //           ? Colors.white
-              //           : Color(0xff302e45),
-              //       fontSize: 25,
-              //       fontWeight: FontWeight.w600),
-              // ),
-              Flexible(
-                  child: Text(
-                homes[index].tennha != null
-                    ? '${homes[index].tennhaDecode}'
-                    : 'Tên nhà',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    // color: homes[index].isEnable
-                    //     ? Colors.white
-                    //     : Color(0xff302e45),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
-              )),
-              SizedBox(height: 5),
-              Flexible(
-                child: Text(
-                  homes[index].manha != null
-                      ? '${homes[index].manha}'
-                      : 'Mã nhà',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      // color: homes[index].isEnable ? Colors.white : Colors.red,
-                      // fontWeight: FontWeight.w600,
-                      // : Color(0xffa3a3a3),
-                      fontSize: 16),
-                ),
-              ),
-              // Icon(model.allYatch[index].topRightIcon,color:model.allYatch[index].isEnable ? Colors.white : Color(0xffa3a3a3))
-            ],
-          ),
-        ),
-        onTap: () async {
-          seletedHome = homes[index];
-          Home home = new Home('', iduser, '${homes[index].tennha}',
-              '${homes[index].manha}', Constants.mac);
-          String json = jsonEncode(home);
-          publishMessage('loginnha', json);
-          homeAction = LOGIN_NHA;
-        },
-      ),
-      onLongPress: () {
-        //onLongPress
-      },
-    );
-  }
-
   Future<void> handle(String message) async {
     Map responseMap = jsonDecode(message);
 
@@ -551,6 +386,8 @@ class _DetailPageState extends State<DetailPage>
         }
     }
   }
+
+  void removePatient(int index) async {}
 
   final snackBar = SnackBar(
     content: Text('Yay! A SnackBar!'),

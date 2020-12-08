@@ -1,8 +1,23 @@
 class Patient {
   String id;
-  String name;
-  String phoneNumber;
-  String information;
+  String ten;
+  String sdt;
+  String nha;
+  String matb;
+  String phong;
+  String giuong;
+  String benhan;
+  String nhietdo;
 
-  Patient(this.id, this.name, this.phoneNumber, this.information);
+  Patient(
+    this.id,
+    this.ten,
+    this.sdt,
+    this.nha,
+    this.matb,
+    this.phong,
+    this.giuong,
+    this.benhan,
+    this.nhietdo,
+  );
 }
