@@ -3,77 +3,46 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
-import 'package:health_care/helper/shared_prefs_helper.dart';
-import 'package:health_care/model/thietbi.dart';
+import 'package:health_care/model/department.dart';
 
 import '../helper/constants.dart' as Constants;
 
-class EditDeviceDialog extends StatefulWidget {
-  final ThietBi thietbi;
-  final List<String> dropDownItems;
-  final Function(dynamic) updateCallback;
+class EditDepartmentDialog extends StatefulWidget {
+  final Department department;
+  final Function(dynamic) editCallback;
   final Function(dynamic) deleteCallback;
 
-  const EditDeviceDialog(
-      {Key key,
-      this.thietbi,
-      this.dropDownItems,
-      this.updateCallback,
-      this.deleteCallback})
-      : super(key: key);
+  const EditDepartmentDialog({
+    Key key,
+    this.department,
+    this.editCallback,
+    this.deleteCallback,
+  }) : super(key: key);
 
   @override
-  _EditDeviceDialogState createState() => _EditDeviceDialogState();
+  _EditDepartmentDialogState createState() => _EditDepartmentDialogState();
 }
 
-class _EditDeviceDialogState extends State<EditDeviceDialog> {
-  static const UPDATE_DEVICE = 'updatethietbi';
-  static const DELETE_DEVICE = 'deletethietbi';
-
-  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
   final scrollController = ScrollController();
+  final nameController = TextEditingController();
   final idController = TextEditingController();
-  final thresholdController = TextEditingController();
-  final timeController = TextEditingController();
+  bool update = false;
 
   MQTTClientWrapper mqttClientWrapper;
-  SharedPrefsHelper sharedPrefsHelper;
-  String pubTopic = '';
-  String currentSelectedValue;
-  ThietBi updatedDevice;
+
+  Department edittedDepartment;
 
   @override
   void initState() {
-    initMqtt();
     initController();
+    initMqtt();
     super.initState();
   }
 
-  Future<void> initMqtt() async {
-    mqttClientWrapper =
-        MQTTClientWrapper(() => print('Success'), (message) => handle(message));
-    await mqttClientWrapper.prepareMqttClient(Constants.mac);
-  }
-
-  void handle(String message) {
-    Map responseMap = jsonDecode(message);
-    if (responseMap['result'] == 'true' && responseMap['errorCode'] == '0') {
-      switch (pubTopic) {
-        case UPDATE_DEVICE:
-          widget.updateCallback(updatedDevice);
-          break;
-        case DELETE_DEVICE:
-          widget.deleteCallback(null);
-      }
-      Navigator.of(context).pop();
-    }
-  }
-
   void initController() async {
-    idController.text = widget.thietbi.mathietbi;
-    currentSelectedValue = widget.thietbi.makhoa;
-    timeController.text = widget.thietbi.thoigian;
-    thresholdController.text = widget.thietbi.nguong;
+    nameController.text = widget.department.departmentNameDecode;
+    idController.text = widget.department.makhoa;
   }
 
   @override
@@ -94,82 +63,22 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTextField(
+                  'Tên',
+                  Icon(Icons.email),
+                  TextInputType.text,
+                  nameController,
+                ),
+                buildTextField(
                   'Mã',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
                   idController,
                 ),
-                buildTextField(
-                  'Ngưỡng',
-                  Icon(Icons.vpn_key),
-                  TextInputType.number,
-                  thresholdController,
-                ),
-                buildTextField(
-                  'Thời gian',
-                  Icon(Icons.vpn_key),
-                  TextInputType.number,
-                  timeController,
-                ),
-                buildDepartment(),
                 deleteButton(),
                 buildButton(),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDepartment() {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(
-          10,
-        ),
-        border: Border.all(
-          color: Colors.green,
-        ),
-      ),
-      margin: const EdgeInsets.symmetric(
-        horizontal: 32,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-              child: Text(
-            'Khoa',
-          )),
-          Expanded(
-            child: dropdownDepartment(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget dropdownDepartment() {
-    return Container(
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          hint: Text("Chọn khoa"),
-          value: currentSelectedValue,
-          isDense: true,
-          onChanged: (newValue) {
-            setState(() {
-              currentSelectedValue = newValue;
-            });
-            print(currentSelectedValue);
-          },
-          items: widget.dropDownItems.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
         ),
       ),
     );
@@ -231,7 +140,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             context: context,
             builder: (context) => AlertDialog(
               title: new Text(
-                'Xóa thiết bị ?',
+                'Xóa khoa ?',
               ),
               actions: <Widget>[
                 new FlatButton(
@@ -244,6 +153,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                   onPressed: () {
                     Navigator.of(context).pop(false);
                     Navigator.of(context).pop(false);
+                    update = false;
                   },
                   child: new Text(
                     'Đồng ý',
@@ -261,7 +171,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               color: Colors.red,
             ),
             Text(
-              'Xóa thiết bị',
+              'Xóa khoa',
               style: TextStyle(fontSize: 18, color: Colors.red),
             ),
           ],
@@ -290,7 +200,13 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                _tryEdit();
+                update = true;
+                edittedDepartment = Department(
+                  utf8.encode(nameController.text).toString(),
+                  idController.text,
+                  Constants.mac,
+                );
+                publishMessage('updatekhoa', jsonEncode(edittedDepartment));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -301,17 +217,10 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
     );
   }
 
-  Future<void> _tryEdit() async {
-    updatedDevice = ThietBi(
-      idController.text,
-      currentSelectedValue,
-      '',
-      thresholdController.text,
-      timeController.text,
-      Constants.mac,
-    );
-    pubTopic = UPDATE_DEVICE;
-    publishMessage(pubTopic, jsonEncode(updatedDevice));
+  Future<void> initMqtt() async {
+    mqttClientWrapper = MQTTClientWrapper(
+        () => print('Success'), (message) => handleDepartment(message));
+    await mqttClientWrapper.prepareMqttClient(Constants.mac);
   }
 
   Future<void> publishMessage(String topic, String message) async {
@@ -324,12 +233,23 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
     }
   }
 
+  void handleDepartment(String message) {
+    Map responseMap = jsonDecode(message);
+    print(
+        '${responseMap['errorCode'] is String}, ${responseMap['result'] is String}');
+    if (responseMap['errorCode'] == '0' && responseMap['result'] == 'true') {
+      if (update) {
+        widget.editCallback(edittedDepartment);
+      }
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   void dispose() {
     scrollController.dispose();
+    nameController.dispose();
     idController.dispose();
-    timeController.dispose();
-    thresholdController.dispose();
     super.dispose();
   }
 }

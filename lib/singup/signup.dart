@@ -321,12 +321,16 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _tryRegister() async {
     registerUser = User(
-        Constants.mac,
-        _emailController.text,
-        _passwordController.text,
-        _nameController.text,
-        _phoneNumberController.text,
-        _addressController.text);
+      Constants.mac,
+      _emailController.text,
+      _passwordController.text,
+      _nameController.text,
+      _phoneNumberController.text,
+      _addressController.text,
+      '',
+      '',
+      '',
+    );
     mqttClientWrapper.register(registerUser);
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:health_care/addWidget/add_page.dart';
 import 'package:health_care/addWidget/add_patient_page.dart';
+import 'package:health_care/main/department_list_screen.dart';
 import 'package:health_care/main/detail_page.dart';
 import 'package:health_care/main/device_list_screen.dart';
 import 'package:health_care/main/home_page.dart';
@@ -28,40 +30,59 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     print('_HomeScreenState.initState: $loginResponse');
-    loginResponse['quyen'] = 1;
 
-    initBottomBarItems(1);
-    initWidgetOptions(1);
+    print('${loginResponse['quyen'] is int}');
+
+    initBottomBarItems(loginResponse['quyen']);
+    initWidgetOptions(loginResponse['quyen']);
 
     super.initState();
   }
 
   void initBottomBarItems(int quyen) {
     bottomBarItems = [
-      quyen == 1
+      quyen != 1
           ? BottomNavigationBarItem(
-              icon: Icon(Icons.details),
+              icon: Icon(
+                Icons.details,
+              ),
               label: 'Cảnh báo',
             )
           : BottomNavigationBarItem(
-              icon: Icon(Icons.details),
+              icon: Icon(
+                Icons.account_circle_outlined,
+              ),
               label: 'Tài khoản',
             ),
-      quyen == 1
+      quyen != 1
           ? BottomNavigationBarItem(
-              icon: Icon(Icons.menu),
+              icon: Icon(
+                Icons.menu,
+              ),
               label: 'Danh sách',
             )
           : BottomNavigationBarItem(
-              icon: Icon(Icons.menu),
+              icon: Icon(
+                Icons.menu,
+              ),
               label: 'Thiết bị',
+            ),
+      quyen != 1
+          ? null
+          : BottomNavigationBarItem(
+              icon: Icon(
+                Icons.meeting_room_outlined,
+              ),
+              label: 'Khoa',
             ),
       BottomNavigationBarItem(
         icon: Icon(Icons.add),
         label: 'Thêm',
       ),
       BottomNavigationBarItem(
-        icon: Icon(Icons.account_box_outlined),
+        icon: Icon(
+          Icons.account_box_outlined,
+        ),
         label: 'Cá nhân',
       ),
     ];
@@ -69,17 +90,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void initWidgetOptions(int quyen) {
     _widgetOptions = <Widget>[
-      quyen == 1
+      quyen != 1
           ? HomePage(
               loginResponse: loginResponse,
             )
-          : UserListScreen(),
-      quyen == 1
+          : UserListScreen(
+              response: loginResponse,
+            ),
+      quyen != 1
           ? DetailPage(
               loginResponse: loginResponse,
             )
           : DeviceListScreen(),
-      quyen == 1 ? AddPatientScreen() : Container(),
+      quyen != 1 ? Container() : DepartmentListScreen(),
+      quyen != 1 ? AddPatientScreen() : AddScreen(),
       UserProfilePage(
         quyen: '1',
       ),

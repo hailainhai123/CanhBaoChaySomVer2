@@ -47,13 +47,15 @@ class _TempPageState extends State<TempPage> {
   Widget buildBody() {
     return Container(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            tempContainer(),
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        tempContainer(),
+      ],
+    ));
+  }
 
-          ],
-        )
-    );
+  Widget tempContainer() {
+    return Container();
   }
 
   handle(String message) {}
@@ -81,8 +83,10 @@ class _TempPageState extends State<TempPage> {
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
+          getTextStyles: (value) => const TextStyle(
+              color: Color(0xff68737d),
+              fontWeight: FontWeight.bold,
+              fontSize: 16),
           getTitles: (value) {
             switch (value.toInt()) {
               case 2:
@@ -118,8 +122,9 @@ class _TempPageState extends State<TempPage> {
           margin: 12,
         ),
       ),
-      borderData:
-      FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
+      borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: const Color(0xff37434d), width: 1)),
       minX: 0,
       maxX: 11,
       minY: 0,
@@ -144,7 +149,8 @@ class _TempPageState extends State<TempPage> {
           ),
           belowBarData: BarAreaData(
             show: true,
-            colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+            colors:
+                gradientColors.map((color) => color.withOpacity(0.3)).toList(),
           ),
         ),
       ],
@@ -175,8 +181,10 @@ class _TempPageState extends State<TempPage> {
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(color: Color(0xff68737d), fontWeight: FontWeight.bold, fontSize: 16),
+          getTextStyles: (value) => const TextStyle(
+              color: Color(0xff68737d),
+              fontWeight: FontWeight.bold,
+              fontSize: 16),
           getTitles: (value) {
             switch (value.toInt()) {
               case 2:
@@ -212,8 +220,9 @@ class _TempPageState extends State<TempPage> {
           margin: 12,
         ),
       ),
-      borderData:
-      FlBorderData(show: true, border: Border.all(color: const Color(0xff37434d), width: 1)),
+      borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: const Color(0xff37434d), width: 1)),
       minX: 0,
       maxX: 11,
       minY: 0,
@@ -231,8 +240,10 @@ class _TempPageState extends State<TempPage> {
           ],
           isCurved: true,
           colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2),
+            ColorTween(begin: gradientColors[0], end: gradientColors[1])
+                .lerp(0.2),
+            ColorTween(begin: gradientColors[0], end: gradientColors[1])
+                .lerp(0.2),
           ],
           barWidth: 5,
           isStrokeCapRound: true,
@@ -240,8 +251,12 @@ class _TempPageState extends State<TempPage> {
             show: false,
           ),
           belowBarData: BarAreaData(show: true, colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2).withOpacity(0.1),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1]).lerp(0.2).withOpacity(0.1),
+            ColorTween(begin: gradientColors[0], end: gradientColors[1])
+                .lerp(0.2)
+                .withOpacity(0.1),
+            ColorTween(begin: gradientColors[0], end: gradientColors[1])
+                .lerp(0.2)
+                .withOpacity(0.1),
           ]),
         ),
       ],

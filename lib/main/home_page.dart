@@ -111,11 +111,7 @@ class _HomePageState extends State<HomePage>
     response = DeviceResponse.fromJson(loginResponse);
 
     iduser = response.message;
-    homes = response.id.map((e) => Home.fromJson(e)).toList();
-    for (int i = 0; i < 20; i++) {
-      homes.add(homes[0]);
-    }
-    print('_HomePageState.initState: ${homes.length}');
+    // homes = response.id.map((e) => Home.fromJson(e)).toList();
   }
 
   void initPatientTest() {

@@ -1,34 +1,25 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
-import 'package:health_care/model/thietbi.dart';
+import 'package:health_care/model/department.dart';
 
 import '../helper/constants.dart' as Constants;
 
-class AddDeviceScreen extends StatefulWidget {
-  final List<String> dropDownItems;
-
-  const AddDeviceScreen({Key key, this.dropDownItems}) : super(key: key);
-
+class AddDepartmentScreen extends StatefulWidget {
   @override
-  _AddDeviceScreenState createState() => _AddDeviceScreenState();
+  _AddDepartmentScreenState createState() => _AddDepartmentScreenState();
 }
 
-class _AddDeviceScreenState extends State<AddDeviceScreen> {
-  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
-
-  MQTTClientWrapper mqttClientWrapper;
-  SharedPrefsHelper sharedPrefsHelper;
-
+class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
   final scrollController = ScrollController();
   final nameController = TextEditingController();
   final idController = TextEditingController();
 
-  String currentSelectedValue;
+  MQTTClientWrapper mqttClientWrapper;
+  SharedPrefsHelper sharedPrefsHelper;
 
   @override
   void initState() {
@@ -36,12 +27,33 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     super.initState();
   }
 
+  Future<void> initMqtt() async {
+    mqttClientWrapper =
+        MQTTClientWrapper(() => print('Success'), (message) => handle(message));
+    await mqttClientWrapper.prepareMqttClient(Constants.mac);
+  }
+
+  void handle(String message) {
+    print('_EditUserDialogState.handle $message');
+    Navigator.pop(context);
+  }
+
+  Future<void> publishMessage(String topic, String message) async {
+    if (mqttClientWrapper.connectionState ==
+        MqttCurrentConnectionState.CONNECTED) {
+      mqttClientWrapper.publishMessage(topic, message);
+    } else {
+      await initMqtt();
+      mqttClientWrapper.publishMessage(topic, message);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Thêm thiết bị',
+          'Thêm khoa',
         ),
         centerTitle: true,
       ),
@@ -66,18 +78,17 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTextField(
-                  'Tên thiết bị',
+                  'Tên khoa',
                   Icon(Icons.email),
                   TextInputType.text,
                   nameController,
                 ),
                 buildTextField(
-                  'Mã thiết bị',
+                  'Mã khoa',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
                   idController,
                 ),
-                dropdownDepartment(),
                 buildButton(),
               ],
             ),
@@ -139,15 +150,12 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                ThietBi tb = ThietBi(
+                Department department = Department(
+                  utf8.encode(nameController.text).toString(),
                   idController.text,
-                  currentSelectedValue,
-                  '',
-                  '',
-                  '',
                   Constants.mac,
                 );
-                publishMessage('registerthietbi', jsonEncode(tb));
+                publishMessage('registerkhoa', jsonEncode(department));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -156,61 +164,6 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         ],
       ),
     );
-  }
-
-  Widget dropdownDepartment() {
-    return Container(
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          hint: Text("Chọn khoa"),
-          value: currentSelectedValue,
-          isDense: true,
-          onChanged: (newValue) {
-            setState(() {
-              currentSelectedValue = newValue;
-            });
-            print(currentSelectedValue);
-          },
-          items: widget.dropDownItems.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
-  }
-
-  void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-  }
-
-  Future<void> initMqtt() async {
-    mqttClientWrapper =
-        MQTTClientWrapper(() => print('Success'), (message) => handle(message));
-    await mqttClientWrapper.prepareMqttClient(Constants.mac);
-  }
-
-  void handle(String message) {
-    Map responseMap = jsonDecode(message);
-    if (responseMap['result'] == 'true' && responseMap['errorCode'] == '0') {
-      Navigator.pop(context);
-    }
-  }
-
-  Future<void> publishMessage(String topic, String message) async {
-    if (mqttClientWrapper.connectionState ==
-        MqttCurrentConnectionState.CONNECTED) {
-      mqttClientWrapper.publishMessage(topic, message);
-    } else {
-      await initMqtt();
-      mqttClientWrapper.publishMessage(topic, message);
-    }
   }
 
   @override

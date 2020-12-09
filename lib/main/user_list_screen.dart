@@ -1,36 +1,43 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:health_care/dialogWidget/edit_user_dialog.dart';
+import 'package:health_care/helper/loader.dart';
+import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
-import 'file:///D:/KhanhLH/health_care/lib/dialogWidget/edit_user_dialog.dart';
+import 'package:health_care/model/department.dart';
 import 'package:health_care/model/user.dart';
+import 'package:health_care/response/device_response.dart';
 
 import '../helper/constants.dart' as Constants;
 
 class UserListScreen extends StatefulWidget {
+  final Map response;
+
+  const UserListScreen({Key key, this.response}) : super(key: key);
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
 
 class _UserListScreenState extends State<UserListScreen> {
+  static const GET_DEPARTMENT = 'loginkhoa';
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+
+  DeviceResponse response;
   List<User> users = List();
-  User user = User(
-    'mac',
-    'lek21197@gmail.com',
-    'pass',
-    'Lê Hồng Khánhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh',
-    'sdt',
-    'nha',
-  );
   MQTTClientWrapper mqttClientWrapper;
+  List<Department> departments = List();
+  var dropDownItems = [''];
+  int selectedIndex;
 
   @override
   void initState() {
     initMqtt();
-    for (int i = 0; i < 100; i++) {
-      users.add(user);
-    }
-    print('_UserListScreenState.initState');
+    response = DeviceResponse.fromJson(widget.response);
+    print('_UserListScreenState.initState $response');
+    users = response.id.map((e) => User.fromJson(e)).toList();
     super.initState();
   }
 
@@ -68,6 +75,7 @@ class _UserListScreenState extends State<UserListScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: Text('Danh sách tài khoản'),
           centerTitle: true,
         ),
@@ -134,23 +142,10 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget itemView(int index) {
     return InkWell(
       onTap: () async {
-        await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                //this right here
-                child: Container(
-                  child: EditUserDialog(
-                    user: users[index],
-                    callback: (param) => {
-                      removeUser(index),
-                    },
-                  ),
-                ),
-              );
-            });
+        selectedIndex = index;
+        Department d = Department('', '', Constants.mac);
+        publishMessage(GET_DEPARTMENT, jsonEncode(d));
+        showLoadingDialog();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 1),
@@ -162,9 +157,9 @@ class _UserListScreenState extends State<UserListScreen> {
                 children: [
                   buildTextData('${index + 1}', 1),
                   verticalLine(),
-                  buildTextData(users[index].email, 4),
+                  buildTextData(users[index].user, 4),
                   verticalLine(),
-                  buildTextData(users[index].ten, 4),
+                  buildTextData(users[index].tenDecode, 4),
                 ],
               ),
             ),
@@ -177,7 +172,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   void removeUser(int index) async {
     setState(() {
-      users.remove(index);
+      users.removeAt(index);
       print('_UserListScreenState.removeUser ${users.length}');
     });
   }
@@ -209,5 +204,57 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  void handleUser(String message) {}
+  void handleUser(String message) async {
+    Map responseMap = jsonDecode(message);
+    var response = DeviceResponse.fromJson(responseMap);
+    departments = response.id.map((e) => Department.fromJson(e)).toList();
+    dropDownItems.clear();
+    departments.forEach((element) {
+      dropDownItems.add(element.makhoa);
+    });
+    print('_UserListScreenState.handleUser ${departments.length}');
+    print('_UserListScreenState.handleUser ${dropDownItems.length}');
+    hideLoadingDialog();
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            //this right here
+            child: Container(
+              child: EditUserDialog(
+                user: users[selectedIndex],
+                dropDownItems: dropDownItems,
+                deleteCallback: (param) => {
+                  removeUser(selectedIndex),
+                },
+                updateCallback: (user) {
+                  users.removeAt(selectedIndex);
+                  users.insert(selectedIndex, user);
+                },
+              ),
+            ),
+          );
+        });
+    print('_EditUserDialogState.handle ${departments.length}');
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+  }
+
+  Future<void> publishMessage(String topic, String message) async {
+    if (mqttClientWrapper.connectionState ==
+        MqttCurrentConnectionState.CONNECTED) {
+      mqttClientWrapper.publishMessage(topic, message);
+    } else {
+      await initMqtt();
+      mqttClientWrapper.publishMessage(topic, message);
+    }
+  }
 }

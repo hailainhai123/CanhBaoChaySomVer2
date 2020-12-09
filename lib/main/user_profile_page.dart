@@ -28,12 +28,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _departmentController = TextEditingController();
+  final TextEditingController _permissionController = TextEditingController();
   User user;
 
   @override
   void initState() {
     sharedPrefsHelper = SharedPrefsHelper();
-    user = User('', 'Tên đăng nhập', 'Mật khẩu', 'Tên', 'SĐT', 'Địa chỉ');
+    user = User(
+      '',
+      'Tên đăng nhập',
+      'Mật khẩu',
+      'Tên',
+      'SĐT',
+      'Địa chỉ',
+      'Khoa',
+      'Quyền',
+      '',
+    );
     initMqtt();
     super.initState();
   }
@@ -139,8 +151,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   new FlatButton(
                     onPressed: () {
                       setState(() {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) => LoginPage()));
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (BuildContext context) => LoginPage()),
+                          (route) => false,
+                        );
                       });
                     },
                     child: new Text('Đồng ý'),
@@ -177,7 +192,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Widget _emailPasswordWidget() {
-    _emailController.text = user.email;
+    _emailController.text = user.user;
     _passwordController.text = user.pass;
     _nameController.text = user.ten;
     _phoneNumberController.text = user.sdt;
@@ -191,6 +206,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
           _entryField("Tên", _nameController, true),
           _entryField("SĐT", _phoneNumberController, true),
           _entryField("Địa chỉ", _addressController, true),
+          _entryField("Khoa", _departmentController, true),
+          _entryField("Quyền", _permissionController, true),
           SizedBox(height: 10),
           _button('Cập nhật'),
           _button('Hủy')
@@ -290,9 +307,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         Color(0xff8f48ff),
                         null),
                     _placeContainer(
-                        user.email != null
-                            ? 'Tên ĐN: ${user.email}'
-                            : 'Tên ĐN: ',
+                        user.user != null ? 'Tên ĐN: ${user.user}' : 'Tên ĐN: ',
                         Color(0xff526fff),
                         null),
                     _placeContainer(
@@ -373,12 +388,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Future<void> _tryEdit() async {
     User user = User(
-        Constants.mac,
-        _emailController.text,
-        _passwordController.text,
-        _nameController.text,
-        _phoneNumberController.text,
-        _addressController.text);
+      Constants.mac,
+      _emailController.text,
+      _passwordController.text,
+      _nameController.text,
+      _phoneNumberController.text,
+      _addressController.text,
+      _departmentController.text,
+      _permissionController.text,
+      '',
+    );
     user.iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
     publishMessage('updateuser', jsonEncode(user));
   }

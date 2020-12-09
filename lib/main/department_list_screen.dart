@@ -2,50 +2,37 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:health_care/dialogWidget/edit_device_dialog.dart';
-import 'package:health_care/helper/loader.dart';
+import 'package:health_care/dialogWidget/edit_department_dialog.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/model/department.dart';
-import 'package:health_care/model/thietbi.dart';
 import 'package:health_care/response/device_response.dart';
 
 import '../helper/constants.dart' as Constants;
 
-class DeviceListScreen extends StatefulWidget {
+class DepartmentListScreen extends StatefulWidget {
   @override
-  _DeviceListScreenState createState() => _DeviceListScreenState();
+  _DepartmentListScreenState createState() => _DepartmentListScreenState();
 }
 
-class _DeviceListScreenState extends State<DeviceListScreen> {
-  static const GET_DEPARTMENT = 'loginkhoa';
-  static const LOGIN_DEVICE = 'loginthietbi';
-
-  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
-
-  List<ThietBi> tbs = List();
-  MQTTClientWrapper mqttClientWrapper;
-
-  String pubTopic;
-  int selectedIndex;
+class _DepartmentListScreenState extends State<DepartmentListScreen> {
   List<Department> departments = List();
-  var dropDownItems = [''];
+  MQTTClientWrapper mqttClientWrapper;
 
   @override
   void initState() {
+    departments.add(Department('tenkhoa', 'makhoa', 'mac'));
     initMqtt();
     super.initState();
   }
 
   Future<void> initMqtt() async {
     mqttClientWrapper = MQTTClientWrapper(
-        () => print('Success'), (message) => handleDevice(message));
+        () => print('Success'), (message) => handleDepartment(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
 
-    ThietBi t = ThietBi('', '', '', '', '', Constants.mac);
-    pubTopic = LOGIN_DEVICE;
-    publishMessage(pubTopic, jsonEncode(t));
-    showLoadingDialog();
+    Department department = Department('tenkhoa', 'makhoa', Constants.mac);
+    publishMessage('loginkhoa', jsonEncode(department));
   }
 
   Future<void> publishMessage(String topic, String message) async {
@@ -56,14 +43,6 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
       await initMqtt();
       mqttClientWrapper.publishMessage(topic, message);
     }
-  }
-
-  void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
-  }
-
-  void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   Future<bool> _onWillPop() async {
@@ -124,11 +103,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
         children: [
           buildTextLabel('STT', 1),
           verticalLine(),
+          buildTextLabel('Tên', 4),
+          verticalLine(),
           buildTextLabel('Mã', 4),
-          verticalLine(),
-          buildTextLabel('Mã khoa', 2),
-          verticalLine(),
-          buildTextLabel('Ngưỡng', 2),
         ],
       ),
     );
@@ -151,7 +128,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
         child: ListView.builder(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
-          itemCount: tbs.length,
+          itemCount: departments.length,
           itemBuilder: (context, index) {
             return itemView(index);
           },
@@ -163,11 +140,26 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   Widget itemView(int index) {
     return InkWell(
       onTap: () async {
-        selectedIndex = index;
-        Department d = Department('', '', Constants.mac);
-        pubTopic = GET_DEPARTMENT;
-        publishMessage(pubTopic, jsonEncode(d));
-        showLoadingDialog();
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                //this right here
+                child: Container(
+                  child: EditDepartmentDialog(
+                    department: departments[index],
+                    editCallback: (department) {
+                      print('_DepartmentListScreenState.itemView $department');
+                      departments.removeAt(index);
+                      departments.insert(index, department);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              );
+            });
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 1),
@@ -179,11 +171,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                 children: [
                   buildTextData('${index + 1}', 1),
                   verticalLine(),
-                  buildTextData(tbs[index].mathietbi, 4),
+                  buildTextData(departments[index].departmentNameDecode, 4),
                   verticalLine(),
-                  buildTextData(tbs[index].makhoa, 2),
-                  verticalLine(),
-                  buildTextData('${tbs[index].nguong}\u2103', 2),
+                  buildTextData(departments[index].makhoa, 4),
                 ],
               ),
             ),
@@ -246,55 +236,16 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
 
   void removeDevice(int index) async {
     setState(() {
-      tbs.removeAt(index);
+      departments.remove(index);
     });
   }
 
-  void handleDevice(String message) async {
+  void handleDepartment(String message) {
     Map responseMap = jsonDecode(message);
     var response = DeviceResponse.fromJson(responseMap);
 
-    switch (pubTopic) {
-      case GET_DEPARTMENT:
-        departments = response.id.map((e) => Department.fromJson(e)).toList();
-        dropDownItems.clear();
-        departments.forEach((element) {
-          dropDownItems.add(element.makhoa);
-        });
-        hideLoadingDialog();
-
-        await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                //this right here
-                child: Container(
-                  child: EditDeviceDialog(
-                    thietbi: tbs[selectedIndex],
-                    dropDownItems: dropDownItems,
-                    deleteCallback: (param) {
-                      removeDevice(selectedIndex);
-                      setState(() {});
-                    },
-                    updateCallback: (updatedDevice) {
-                      tbs.removeAt(selectedIndex);
-                      tbs.insert(selectedIndex, updatedDevice);
-                      setState(() {});
-                    },
-                  ),
-                ),
-              );
-            });
-
-        break;
-      case LOGIN_DEVICE:
-        tbs = response.id.map((e) => ThietBi.fromJson(e)).toList();
-        setState(() {});
-        hideLoadingDialog();
-        break;
-    }
+    departments = response.id.map((e) => Department.fromJson(e)).toList();
+    setState(() {});
   }
 
   @override

@@ -26,6 +26,8 @@ class Device {
   String nhietdo;
   @ColumnInfo(name: 'giuong', nullable: false)
   String giuong;
+  @ColumnInfo(name: 'khoa', nullable: false)
+  String khoa;
   bool isEnable = false;
 
   String get tentbDecode {

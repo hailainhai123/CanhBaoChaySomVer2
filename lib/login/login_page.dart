@@ -33,6 +33,8 @@ class _LoginPageState extends State<LoginPage> {
   bool _switchValue = false;
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   String iduser;
+  var status;
+  String playerid = '';
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -62,8 +64,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void initOneSignal(oneSignalAppId) async {
-    var status = await OneSignal.shared.getPermissionSubscriptionState();
-    var playerId = status.subscriptionStatus.userId;
+    status = await OneSignal.shared.getPermissionSubscriptionState();
 
     var settings = {
       OSiOSSettings.autoPrompt: true,
@@ -117,8 +118,10 @@ class _LoginPageState extends State<LoginPage> {
         _showToast(context);
       }
     });
-    User user = User('02:00:00:00:00:00', _emailController.text,
-        _passwordController.text, '', '', '');
+    playerid = await status.subscriptionStatus.userId;
+    print('_LoginPageState.initOneSignal playerID: $playerid');
+    User user = User(Constants.mac, _emailController.text,
+        _passwordController.text, '', '', '', '', '', playerid);
 
     if (mqttClientWrapper.connectionState ==
         MqttCurrentConnectionState.CONNECTED) {

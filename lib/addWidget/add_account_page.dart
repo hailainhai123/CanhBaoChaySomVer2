@@ -1,11 +1,29 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:health_care/helper/loader.dart';
+import 'package:health_care/helper/models.dart';
+import 'package:health_care/helper/mqttClientWrapper.dart';
+import 'package:health_care/helper/shared_prefs_helper.dart';
+import 'package:health_care/model/user.dart';
+
+import '../helper/constants.dart' as Constants;
 
 class AddAccountScreen extends StatefulWidget {
+  final List<String> dropDownItems;
+
+  const AddAccountScreen({Key key, this.dropDownItems}) : super(key: key);
+
   @override
   _AddAccountScreenState createState() => _AddAccountScreenState();
 }
 
 class _AddAccountScreenState extends State<AddAccountScreen> {
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+
+  MQTTClientWrapper mqttClientWrapper;
+  SharedPrefsHelper sharedPrefsHelper;
+
   final scrollController = ScrollController();
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -14,8 +32,12 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final addressController = TextEditingController();
   final phoneController = TextEditingController();
 
+  String currentSelectedValue;
+  String permission;
+
   @override
   void initState() {
+    initMqtt();
     initController();
     super.initState();
   }
@@ -35,7 +57,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Thêm bệnh nhân',
+          'Thêm tài khoản',
         ),
         centerTitle: true,
       ),
@@ -95,6 +117,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   TextInputType.text,
                   phoneController,
                 ),
+                dropdownDepartment(),
+                dropDownPermission(),
                 buildButton(),
               ],
             ),
@@ -156,7 +180,18 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                Navigator.pop(context);
+                User user = User(
+                  Constants.mac,
+                  usernameController.text,
+                  passwordController.text,
+                  utf8.encode(nameController.text).toString(),
+                  phoneController.text,
+                  utf8.encode(addressController.text).toString(),
+                  currentSelectedValue,
+                  permission,
+                  '',
+                );
+                publishMessage('registeruser', jsonEncode(user));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -165,6 +200,86 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ],
       ),
     );
+  }
+
+  Widget dropdownDepartment() {
+    return Container(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Text("Chọn khoa"),
+          value: currentSelectedValue,
+          isDense: true,
+          onChanged: (newValue) {
+            setState(() {
+              currentSelectedValue = newValue;
+            });
+            print(currentSelectedValue);
+          },
+          items: widget.dropDownItems.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget dropDownPermission() {
+    var permissionValue = ['1', '2'];
+    return Container(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Text("Chọn quyền"),
+          value: permission,
+          isDense: true,
+          onChanged: (newValue) {
+            setState(() {
+              permission = newValue;
+            });
+            print(permission);
+          },
+          items: permissionValue.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+  }
+
+  void handle(String message) {
+    Map responseMap = jsonDecode(message);
+    if (responseMap['result'] == 'true' && responseMap['errorCode'] == '0') {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> initMqtt() async {
+    mqttClientWrapper =
+        MQTTClientWrapper(() => print('Success'), (message) => handle(message));
+    await mqttClientWrapper.prepareMqttClient(Constants.mac);
+  }
+
+  Future<void> publishMessage(String topic, String message) async {
+    if (mqttClientWrapper.connectionState ==
+        MqttCurrentConnectionState.CONNECTED) {
+      mqttClientWrapper.publishMessage(topic, message);
+    } else {
+      await initMqtt();
+      mqttClientWrapper.publishMessage(topic, message);
+    }
   }
 
   @override
