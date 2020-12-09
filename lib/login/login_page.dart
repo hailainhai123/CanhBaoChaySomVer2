@@ -1,13 +1,19 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_care/Widget/bezierContainer.dart';
+import 'package:health_care/addWidget/line_chart.dart';
+import 'package:health_care/addWidget/patient_page.dart';
+import 'package:health_care/device/temp_monitor_page.dart';
 import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/main/home_screen.dart';
+import 'package:health_care/model/device.dart';
 import 'package:health_care/model/user.dart';
+import 'package:health_care/navigator.dart';
 import 'package:health_care/response/device_response.dart';
 import 'package:health_care/singup/signup.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -35,6 +41,7 @@ class _LoginPageState extends State<LoginPage> {
   String iduser;
   var status;
   String playerid = '';
+  bool switchValue = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -109,6 +116,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _tryLogin() async {
+    //khanhlhtest
+    if (switchValue) {
+      navigatorPush(context, SimpleTimeSeriesChart.withSampleData());
+      return;
+    }
     setState(() {
       loading = true;
     });
@@ -158,20 +170,17 @@ class _LoginPageState extends State<LoginPage> {
       await sharedPrefsHelper.addStringToSF(
           'password', _passwordController.text);
       await sharedPrefsHelper.addBoolToSF('switchValue', _switchValue);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(
+      if (switchValue) {
+        navigatorPush(context,
+            TempPage(Device('', '', '', '', '', '', '', '', ''), iduser));
+      } else {
+        navigatorPush(
+          context,
+          HomeScreen(
             loginResponse: responseMap,
           ),
-        ),
-      );
-      // Navigator.push(
-      //     context,
-      //     MaterialPageRoute(
-      //         builder: (context) => HomePage(
-      //               loginResponse: responseMap,
-      //             )));
+        );
+      }
     } else {
       this._showToast(context);
       // Scaffold.of(context).showSnackBar(snackbar);
@@ -474,13 +483,7 @@ class _LoginPageState extends State<LoginPage> {
                       _emailPasswordWidget(),
                       // _saveSwitch(),
                       _submitButton(),
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        alignment: Alignment.centerRight,
-                        child: Text('Quên mật khẩu ?',
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500)),
-                      ),
+                      switchContainer(),
                       _divider(),
                       _facebookButton(),
                       _createAccountLabel(),
@@ -492,6 +495,32 @@ class _LoginPageState extends State<LoginPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget switchContainer() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            'Quản lý',
+          ),
+          CupertinoSwitch(
+            activeColor: Colors.blue,
+            value: switchValue,
+            onChanged: (value) {
+              setState(() {
+                switchValue = value;
+              });
+            },
+          ),
+          Text(
+            'Bệnh nhân',
+          ),
+        ],
       ),
     );
   }
