@@ -27,6 +27,7 @@ class User {
   String _id;
   String thongbao;
   String trangthai;
+  String passmoi;
 
   User(
     this.mac,
@@ -71,6 +72,7 @@ class User {
         'playerid': playerid,
         'thongbao': thongbao,
         'trangthai': trangthai,
+        'passmoi': passmoi,
       };
 
   String get tenDecode {

@@ -30,6 +30,9 @@ class _PatientPageState extends State<PatientPage> {
     '',
     '',
     '',
+    0.0,
+    '',
+    '',
     '',
   );
 
@@ -43,9 +46,9 @@ class _PatientPageState extends State<PatientPage> {
 
   @override
   void initState() {
-    _idController.text = tempPatient.id;
+    _idController.text = tempPatient.mabenhnhan;
     _nameController.text = tempPatient.ten;
-    _informationController.text = tempPatient.matb;
+    _informationController.text = tempPatient.mathietbi;
     _phoneNumberController.text = tempPatient.sdt;
 
     mqttClientWrapper = MQTTClientWrapper(

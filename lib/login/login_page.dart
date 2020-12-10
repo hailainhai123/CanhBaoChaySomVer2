@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_care/Widget/bezierContainer.dart';
-import 'package:health_care/addWidget/line_chart.dart';
-import 'package:health_care/addWidget/patient_page.dart';
 import 'package:health_care/device/temp_monitor_page.dart';
 import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
@@ -116,11 +114,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _tryLogin() async {
-    //khanhlhtest
-    if (switchValue) {
-      navigatorPush(context, SimpleTimeSeriesChart.withSampleData());
-      return;
-    }
     setState(() {
       loading = true;
     });
@@ -130,7 +123,11 @@ class _LoginPageState extends State<LoginPage> {
         _showToast(context);
       }
     });
-    playerid = await status.subscriptionStatus.userId;
+    try {
+      playerid = await status.subscriptionStatus.userId;
+    } catch (e) {
+      print('_LoginPageState._tryLogin erorr: ${e.toString()}');
+    }
     print('_LoginPageState.initOneSignal playerID: $playerid');
     User user = User(Constants.mac, _emailController.text,
         _passwordController.text, '', '', '', '', '', playerid);
@@ -146,6 +143,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> login(String message) async {
     hideLoadingDialog();
+    print('_LoginPageState.login $message');
     Map responseMap = jsonDecode(message);
 
     iduser = DeviceResponse.fromJson(responseMap).message;
@@ -170,6 +168,7 @@ class _LoginPageState extends State<LoginPage> {
       await sharedPrefsHelper.addStringToSF(
           'password', _passwordController.text);
       await sharedPrefsHelper.addBoolToSF('switchValue', _switchValue);
+      await sharedPrefsHelper.addBoolToSF('login', true);
       if (switchValue) {
         navigatorPush(context,
             TempPage(Device('', '', '', '', '', '', '', '', ''), iduser));
@@ -188,7 +187,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showToast(BuildContext context) {
-    final scaffold = Scaffold.of(context);
+    final scaffold = Scaffold.of(_keyLoader.currentContext);
     final snackBar = SnackBar(
       content: Text('Đăng nhập thất bại!'),
       action: SnackBarAction(

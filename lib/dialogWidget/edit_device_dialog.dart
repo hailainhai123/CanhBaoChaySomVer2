@@ -63,7 +63,8 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
           widget.updateCallback(updatedDevice);
           break;
         case DELETE_DEVICE:
-          widget.deleteCallback(null);
+          widget.deleteCallback('true');
+          Navigator.of(context).pop();
       }
       Navigator.of(context).pop();
     }
@@ -111,7 +112,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                   TextInputType.number,
                   timeController,
                 ),
-                buildDepartment(),
+                dropdownDepartment(),
                 deleteButton(),
                 buildButton(),
               ],
@@ -125,6 +126,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
   Widget buildDepartment() {
     return Container(
       height: 44,
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
           10,
@@ -136,7 +138,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
-      child: Row(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
@@ -242,8 +244,10 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                 ),
                 new FlatButton(
                   onPressed: () {
-                    Navigator.of(context).pop(false);
-                    Navigator.of(context).pop(false);
+                    pubTopic = DELETE_DEVICE;
+                    var d = ThietBi(widget.thietbi.mathietbi,
+                        widget.thietbi.makhoa, '', '', '', Constants.mac);
+                    publishMessage(pubTopic, jsonEncode(d));
                   },
                   child: new Text(
                     'Đồng ý',

@@ -277,68 +277,80 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text('Tài khoản'),
-          centerTitle: true,
-        ),
-        body: Stack(
-          children: <Widget>[
-            SingleChildScrollView(
-              child: Container(
-                color: Color(0xffe7eaf2),
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.fromLTRB(40.0, 40, 40, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    CircleAvatar(
-                        backgroundColor: Colors.brown.shade800,
-                        minRadius: 40,
-                        child: Text(
-                          user.ten[0],
-                          style: TextStyle(fontSize: 30),
-                        )),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    _placeContainer(
-                        user.ten != null ? 'Tên: ${user.ten}' : 'Chưa nhập tên',
-                        Color(0xff8f48ff),
-                        null),
-                    _placeContainer(
-                        user.user != null ? 'Tên ĐN: ${user.user}' : 'Tên ĐN: ',
-                        Color(0xff526fff),
-                        null),
-                    _placeContainer(
-                        user.nha != null
-                            ? 'Địa chỉ: ${user.nha}'
-                            : 'Chưa nhập địa chỉ',
-                        Color(0xff8f48ff),
-                        null),
-                    _placeContainer(
-                        user.sdt != null ? 'SĐT: ${user.sdt}' : 'Chưa nhập SĐT',
-                        Color(0xff8f48ff),
-                        null),
-                    _editContainer(
-                        'Sửa thông tin', Color(0xffffffff), Icon(Icons.edit)),
-                    int.parse(widget.quyen) == 0
-                        ? _placeContainer('Thêm tài khoản', Color(0xffffffff),
-                            Icon(Icons.add))
-                        : Container(),
-                    _logoutContainer(
-                        'Đăng xuất',
-                        Color(0xffffffff),
-                        Icon(
-                          Icons.power_settings_new,
-                          color: Colors.red,
-                        )),
-                  ],
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Tài khoản'),
+        centerTitle: true,
+      ),
+      body: Container(
+        color: Color(0xffe7eaf2),
+        height: double.infinity,
+        child: SingleChildScrollView(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.fromLTRB(40.0, 40, 40, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                CircleAvatar(
+                    backgroundColor: Colors.brown.shade800,
+                    minRadius: 40,
+                    child: Text(
+                      user.ten[0],
+                      style: TextStyle(fontSize: 30),
+                    )),
+                SizedBox(
+                  height: 15,
                 ),
-              ),
-            )
-          ],
-        ));
+                _placeContainer(
+                    user.ten != null ? 'Tên: ${user.ten}' : 'Chưa nhập tên',
+                    Color(0xff8f48ff),
+                    null),
+                _placeContainer(
+                    user.user != null ? 'Tên ĐN: ${user.user}' : 'Tên ĐN: ',
+                    Color(0xff526fff),
+                    null),
+                _placeContainer(
+                    user.nha != null
+                        ? 'Địa chỉ: ${user.nha}'
+                        : 'Chưa nhập địa chỉ',
+                    Color(0xff8f48ff),
+                    null),
+                _placeContainer(
+                    user.sdt != null ? 'SĐT: ${user.sdt}' : 'Chưa nhập SĐT',
+                    Color(0xff8f48ff),
+                    null),
+                _placeContainer(
+                    user.quyen != null ? 'Quyền: ${user.quyen}' : 'Chưa có quyền',
+                    Color(0xff8f48ff),
+                    null),
+                user.quyen != '1'
+                    ? _placeContainer(
+                        user.khoa != null
+                            ? 'Khoa: ${user.khoa}'
+                            : 'Chưa có khoa',
+                        Color(0xff8f48ff),
+                        null)
+                    : Container(),
+                _editContainer(
+                    'Sửa thông tin', Color(0xffffffff), Icon(Icons.edit)),
+                int.parse(widget.quyen) == 0
+                    ? _placeContainer(
+                        'Thêm tài khoản', Color(0xffffffff), Icon(Icons.add))
+                    : Container(),
+                _logoutContainer(
+                    'Đăng xuất',
+                    Color(0xffffffff),
+                    Icon(
+                      Icons.power_settings_new,
+                      color: Colors.red,
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _button(String text) {

@@ -5,7 +5,6 @@ import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/user.dart';
-import 'package:health_care/response/device_response.dart';
 
 import '../helper/constants.dart' as Constants;
 
@@ -27,32 +26,47 @@ class EditUserDialog extends StatefulWidget {
   _EditUserDialogState createState() => _EditUserDialogState();
 }
 
-class _EditUserDialogState extends State<EditUserDialog> {
+class _EditUserDialogState extends State<EditUserDialog>
+    with SingleTickerProviderStateMixin {
   static const UPDATE_USER = 'updateuser';
   static const DELETE_USER = 'deleteuser';
-  static const CHANGE_PASSWORD = 'changepassword';
+  static const CHANGE_PASSWORD = 'updatepass';
   static const GET_DEPARTMENT = 'loginkhoa';
 
   final scrollController = ScrollController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final newPasswordController = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
   final departmentController = TextEditingController();
   final permissionController = TextEditingController();
 
+  final List<Tab> myTabs = <Tab>[
+    Tab(
+      icon: Icon(Icons.edit),
+      text: 'Thông tin',
+    ),
+    Tab(
+      icon: Icon(Icons.security),
+      text: 'Mật khẩu',
+    ),
+  ];
+
   MQTTClientWrapper mqttClientWrapper;
   SharedPrefsHelper sharedPrefsHelper;
   User updatedUser;
   String pubTopic = '';
   String currentSelectedValue;
+  TabController _tabController;
 
   @override
   void initState() {
-    initController();
     sharedPrefsHelper = SharedPrefsHelper();
     initMqtt();
+    initController();
+    _tabController = TabController(vsync: this, length: 2);
     super.initState();
   }
 
@@ -65,16 +79,22 @@ class _EditUserDialogState extends State<EditUserDialog> {
   void handle(String message) {
     print('_EditUserDialogState.handle $message');
     Map responseMap = jsonDecode(message);
-    var response = DeviceResponse.fromJson(responseMap);
 
+    if (responseMap['errorCode'] != '0' || responseMap['result'] != 'true') {
+      return;
+    }
     switch (pubTopic) {
       case UPDATE_USER:
         widget.updateCallback(updatedUser);
         Navigator.pop(context);
         break;
       case CHANGE_PASSWORD:
+        Navigator.pop(context);
         break;
       case DELETE_USER:
+        widget.deleteCallback('true');
+        Navigator.pop(context);
+        Navigator.pop(context);
         break;
     }
   }
@@ -92,24 +112,20 @@ class _EditUserDialogState extends State<EditUserDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.edit)),
-              Tab(icon: Icon(Icons.security)),
-            ],
-          ),
-          title: Text('Thông tin tài khoản'),
+    return Scaffold(
+      appBar: AppBar(
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: myTabs,
         ),
-        body: TabBarView(
-          children: [
-            updateUserTab(),
-            changePasswordTab(),
-          ],
-        ),
+        title: Text('Tài khoản'),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          updateUserTab(),
+          changePasswordTab(),
+        ],
       ),
     );
   }
@@ -128,24 +144,23 @@ class _EditUserDialogState extends State<EditUserDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               buildTextField(
-                'mật khẩu cũ',
+                'Username',
+                Icon(Icons.vpn_key),
+                TextInputType.text,
+                emailController,
+              ),
+              buildTextField(
+                'Mật khẩu cũ',
                 Icon(Icons.vpn_key),
                 TextInputType.text,
                 passwordController,
                 obscure: true,
               ),
               buildTextField(
-                'nhập lại mật khẩu cũ',
+                'Mật khẩu mới',
                 Icon(Icons.vpn_key),
                 TextInputType.text,
-                passwordController,
-                obscure: true,
-              ),
-              buildTextField(
-                'mật khẩu mới',
-                Icon(Icons.vpn_key),
-                TextInputType.text,
-                passwordController,
+                newPasswordController,
                 obscure: true,
               ),
               buildButton(),
@@ -212,7 +227,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 TextInputType.text,
                 permissionController,
               ),
-              buildDepartment(),
+              widget.user.quyen == '1' ? Container() : buildDepartment(),
               deleteButton(),
               buildButton(),
             ],
@@ -297,9 +312,10 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 ),
                 new FlatButton(
                   onPressed: () {
-                    Navigator.of(context).pop(false);
-                    widget.deleteCallback(true);
-                    Navigator.of(context).pop(false);
+                    pubTopic = DELETE_USER;
+                    var u = User(Constants.mac, widget.user.user,
+                        widget.user.pass, '', '', '', '', '', '');
+                    publishMessage(pubTopic, jsonEncode(u));
                   },
                   child: new Text(
                     'Đồng ý',
@@ -346,7 +362,16 @@ class _EditUserDialogState extends State<EditUserDialog> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                _tryEdit();
+                switch (_tabController.index) {
+                  case 0:
+                    pubTopic = UPDATE_USER;
+                    _tryEdit();
+                    break;
+                  case 1:
+                    pubTopic = CHANGE_PASSWORD;
+                    changePass();
+                    break;
+                }
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -360,6 +385,7 @@ class _EditUserDialogState extends State<EditUserDialog> {
   Widget buildDepartment() {
     return Container(
       height: 44,
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
           10,
@@ -371,13 +397,14 @@ class _EditUserDialogState extends State<EditUserDialog> {
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
-      child: Row(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-              child: Text(
-            'Khoa',
-          )),
+            child: Text(
+              'Khoa',
+            ),
+          ),
           Expanded(
             child: dropdownDepartment(),
           ),
@@ -423,8 +450,26 @@ class _EditUserDialogState extends State<EditUserDialog> {
       '',
     );
     updatedUser.iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
-    pubTopic = UPDATE_USER;
     publishMessage(pubTopic, jsonEncode(updatedUser));
+  }
+
+  Future<void> changePass() async {
+    updatedUser = User(
+      Constants.mac,
+      emailController.text,
+      passwordController.text,
+      utf8.encode(nameController.text).toString(),
+      phoneController.text,
+      utf8.encode(addressController.text).toString(),
+      currentSelectedValue,
+      permissionController.text,
+      '',
+    );
+    updatedUser.passmoi = newPasswordController.text;
+    updatedUser.iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
+    ChangePassword changePassword = ChangePassword(updatedUser.user,
+        updatedUser.pass, updatedUser.passmoi, updatedUser.mac);
+    publishMessage(pubTopic, jsonEncode(changePassword));
   }
 
   Future<void> publishMessage(String topic, String message) async {
@@ -447,6 +492,24 @@ class _EditUserDialogState extends State<EditUserDialog> {
     passwordController.dispose();
     departmentController.dispose();
     permissionController.dispose();
+    newPasswordController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
+}
+
+class ChangePassword {
+  final String user;
+  final String pass;
+  final String passmoi;
+  final String mac;
+
+  ChangePassword(this.user, this.pass, this.passmoi, this.mac);
+
+  Map<String, dynamic> toJson() => {
+        'user': user,
+        'pass': pass,
+        'passmoi': passmoi,
+        'mac': mac,
+      };
 }

@@ -4,52 +4,45 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:health_care/device/edit_page.dart';
 import 'package:health_care/dialogWidget/edit_patient_dialog.dart';
+import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
+import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/department.dart';
-import 'package:health_care/model/device.dart';
-import 'package:health_care/model/home.dart';
+import 'package:health_care/model/getbn.dart';
 import 'package:health_care/model/patient.dart';
-import 'package:health_care/model/room.dart';
+import 'package:health_care/model/thietbi.dart';
 import 'package:health_care/response/device_response.dart';
 
 import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
-import 'department_page.dart';
-
-const int LOGIN_NHA = 0;
-const int DELETE_NHA = 1;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key, this.loginResponse}) : super(key: key);
-
-  final Map loginResponse;
-
   @override
-  _HomePageState createState() => _HomePageState(loginResponse);
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  _HomePageState(this.loginResponse);
+  static const GET_DEPARTMENT = 'loginkhoa';
+  static const GET_BN_SOT = 'getkhoabenhnhansot';
+  static const LOGIN_DEVICE = 'loginthietbi';
 
-  final Map loginResponse;
-  List<Device> devices;
-  List<Room> rooms = List();
-  List<Department> departments = List();
-  List<Home> homes = List();
-  Home seletedHome;
-  String iduser;
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   DeviceResponse response;
-  int homeAction = 2;
-  int deletePosition = 0;
+  String pubTopic;
+  int selectedIndex;
+  List<Department> departments = List();
+  var dropDownItems = [''];
+  String khoa;
 
   MQTTClientWrapper mqttClientWrapper;
+  SharedPrefsHelper sharedPrefsHelper;
   List<Patient> patients = List();
+  List<ThietBi> tbs = List();
 
   Future<bool> _onWillPop() async {
     return (await showDialog(
@@ -73,45 +66,22 @@ class _HomePageState extends State<HomePage>
         false;
   }
 
-  Future<bool> _deleteHome(Home home) async {
-    return (await showDialog(
-          context: context,
-          builder: (context) => new AlertDialog(
-            title: new Text('Bạn muốn xóa nhà ?'),
-            // content: new Text('Bạn muốn thoát ứng dụng?'),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: new Text('Hủy'),
-              ),
-              new FlatButton(
-                onPressed: () {
-                  setState(() {
-                    Navigator.of(context).pop(false);
-                    Home h = Home(
-                        '', iduser, home.tennha, home.manha, Constants.mac);
-                    String dJson = jsonEncode(h);
-                    publishMessage('deletenha', dJson);
-                    homeAction = DELETE_NHA;
-                  });
-                },
-                child: new Text('Đồng ý'),
-              ),
-            ],
-          ),
-        )) ??
-        false;
-  }
-
   @override
   void initState() {
     super.initState();
     initMqtt();
     initPatientTest();
-    response = DeviceResponse.fromJson(loginResponse);
+    initSharedPrefs();
+    print('_HomePageState.initState');
+  }
 
-    iduser = response.message;
-    // homes = response.id.map((e) => Home.fromJson(e)).toList();
+  void initSharedPrefs() async {
+    sharedPrefsHelper = SharedPrefsHelper();
+    pubTopic = GET_BN_SOT;
+    showLoadingDialog();
+    khoa = await sharedPrefsHelper.getStringValuesSF('khoa');
+    GetBN getBN = GetBN(Constants.mac, khoa);
+    publishMessage(pubTopic, jsonEncode(getBN));
   }
 
   void initPatientTest() {
@@ -124,23 +94,14 @@ class _HomePageState extends State<HomePage>
       '1',
       '5',
       'Sốt Virus',
-      '37.5',
+      37.5,
+      '',
+      '',
+      '',
     );
 
-    for (int i = 0; i < 100; i++) {
-      switch (i % 3) {
-        case 0:
-          patient.nhietdo = '37';
-          break;
-        case 1:
-          patient.nhietdo = '37.5';
-          break;
-        case 2:
-          patient.nhietdo = '38.5';
-          break;
-        default:
-          patient.nhietdo = '0';
-      }
+    for (int i = 0; i < 10; i++) {
+      patient.nhietdo = 0.0;
       patients.add(patient);
     }
   }
@@ -235,30 +196,18 @@ class _HomePageState extends State<HomePage>
   Widget itemView(int index) {
     return InkWell(
       onTap: () async {
-        await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                //this right here
-                child: Container(
-                  child: EditPatientDialog(
-                    patient: patients[index],
-                    callback: (param) => {
-                      removePatient(index),
-                    },
-                  ),
-                ),
-              );
-            });
+        selectedIndex = index;
+        Department d = Department('', khoa, Constants.mac);
+        pubTopic = LOGIN_DEVICE;
+        publishMessage(pubTopic, jsonEncode(d));
+        showLoadingDialog();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 1),
         child: Column(
           children: [
             Container(
-              color: double.parse(patients[index].nhietdo) > 38.5
+              color: patients[index].nhietdo > 38.5
                   ? Colors.yellow
                   : Colors.transparent,
               height: 40,
@@ -266,13 +215,13 @@ class _HomePageState extends State<HomePage>
                 children: [
                   buildTextData('${index + 1}', 3),
                   verticalLine(),
-                  buildTextData(patients[index].ten, 15),
+                  buildTextData(patients[index].tenDecode, 15),
                   verticalLine(),
                   buildTextData(patients[index].giuong, 2),
                   verticalLine(),
                   buildTextData(patients[index].phong, 2),
                   verticalLine(),
-                  tempData(patients[index].nhietdo, 4),
+                  tempData(patients[index].nhietdo.toString(), 4),
                 ],
               ),
             ),
@@ -328,36 +277,62 @@ class _HomePageState extends State<HomePage>
 
   Future<void> handle(String message) async {
     Map responseMap = jsonDecode(message);
+    response = DeviceResponse.fromJson(responseMap);
 
-    switch (homeAction) {
-      case LOGIN_NHA:
-        {
-          if (responseMap['result'] == 'true') {
-            response = DeviceResponse.fromJson(jsonDecode(message));
-
-            rooms.clear();
-            print('Home page: ${response.id}');
-            rooms = response.id.map((e) => Room.fromJson(e)).toList();
-            print('loginnha: ${rooms.length}');
-
-            await Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) => DepartmentPage(
-                    loginResponse: loginResponse,
-                    rooms: rooms,
-                    home: seletedHome)));
-          }
-          break;
-        }
-      case DELETE_NHA:
-        {
-          if (responseMap['result'] == 'true') {
-            setState(() {
-              homes.removeAt(deletePosition);
+    switch (pubTopic) {
+      case GET_DEPARTMENT:
+        departments = response.id.map((e) => Department.fromJson(e)).toList();
+        dropDownItems.clear();
+        departments.forEach((element) {
+          dropDownItems.add(element.makhoa);
+        });
+        hideLoadingDialog();
+        print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
+        break;
+      case GET_BN_SOT:
+        patients = response.id.map((e) => Patient.fromJson(e)).toList();
+        setState(() {});
+        hideLoadingDialog();
+        break;
+      case LOGIN_DEVICE:
+        tbs = response.id.map((e) => ThietBi.fromJson(e)).toList();
+        dropDownItems.clear();
+        tbs.forEach((element) {
+          dropDownItems.add(element.mathietbi);
+        });
+        setState(() {});
+        hideLoadingDialog();
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                //this right here
+                child: Container(
+                  child: EditPatientDialog(
+                    patient: patients[selectedIndex],
+                    dropDownItems: dropDownItems,
+                    deleteCallback: (param) => {
+                      removePatient(selectedIndex),
+                    },
+                    updateCallback: (param) => {
+                      patients.removeAt(selectedIndex),
+                      patients.insert(selectedIndex, param),
+                    },
+                  ),
+                ),
+              );
             });
-          }
-          break;
-        }
+        print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
+        break;
     }
+  }
+
+  void removePatient(int index) async {
+    setState(() {
+      patients.removeAt(index);
+    });
   }
 
   final snackBar = SnackBar(
@@ -380,19 +355,13 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  void _navigateEditPage(int typeOfEdit, int index) async {
-    Home home = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (BuildContext context) =>
-            EditPage(iduser, homes[index], null, null, typeOfEdit)));
-    setState(() {
-      // homes.removeAt(index);
-      // homes.add(home);
-      homes[index].manha = home.manha;
-      homes[index].tennha = home.tennha;
-    });
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
-  void removePatient(int index) async {}
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+  }
 }
 
 class SnackBarPage extends StatelessWidget {

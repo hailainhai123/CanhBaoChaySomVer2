@@ -262,6 +262,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           dropDownItems.add(element.makhoa);
         });
         hideLoadingDialog();
+        print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
 
         await showDialog(
             context: context,
@@ -295,6 +296,7 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
         hideLoadingDialog();
         break;
     }
+    pubTopic = '';
   }
 
   @override

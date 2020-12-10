@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:health_care/addWidget/add_page.dart';
 import 'package:health_care/addWidget/add_patient_page.dart';
+import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/main/department_list_screen.dart';
 import 'package:health_care/main/detail_page.dart';
 import 'package:health_care/main/device_list_screen.dart';
@@ -22,6 +23,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final Map loginResponse;
   int _selectedIndex = 0;
+  SharedPrefsHelper sharedPrefsHelper;
+
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static List<Widget> _widgetOptions;
@@ -29,85 +32,103 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    print('_HomeScreenState.initState: $loginResponse');
-
-    print('${loginResponse['quyen'] is int}');
+    sharedPrefsHelper = SharedPrefsHelper();
 
     initBottomBarItems(loginResponse['quyen']);
     initWidgetOptions(loginResponse['quyen']);
-
+    sharedPrefsHelper.addStringToSF('khoa', loginResponse['khoa']);
     super.initState();
   }
 
   void initBottomBarItems(int quyen) {
-    bottomBarItems = [
-      quyen != 1
-          ? BottomNavigationBarItem(
-              icon: Icon(
-                Icons.details,
-              ),
-              label: 'Cảnh báo',
-            )
-          : BottomNavigationBarItem(
-              icon: Icon(
-                Icons.account_circle_outlined,
-              ),
-              label: 'Tài khoản',
+    switch (quyen) {
+      case 1:
+        bottomBarItems = [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.account_circle_outlined,
             ),
-      quyen != 1
-          ? BottomNavigationBarItem(
-              icon: Icon(
-                Icons.menu,
-              ),
-              label: 'Danh sách',
-            )
-          : BottomNavigationBarItem(
-              icon: Icon(
-                Icons.menu,
-              ),
-              label: 'Thiết bị',
+            label: 'Tài khoản',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.menu,
             ),
-      quyen != 1
-          ? null
-          : BottomNavigationBarItem(
-              icon: Icon(
-                Icons.meeting_room_outlined,
-              ),
-              label: 'Khoa',
+            label: 'Thiết bị',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.meeting_room_outlined,
             ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.add),
-        label: 'Thêm',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(
-          Icons.account_box_outlined,
-        ),
-        label: 'Cá nhân',
-      ),
-    ];
+            label: 'Khoa',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Thêm',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.account_box_outlined,
+            ),
+            label: 'Cá nhân',
+          ),
+        ];
+        break;
+      case 2:
+        bottomBarItems = [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.details,
+            ),
+            label: 'Cảnh báo',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.menu,
+            ),
+            label: 'Danh sách',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Thêm',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.account_box_outlined,
+            ),
+            label: 'Cá nhân',
+          ),
+        ];
+        break;
+    }
   }
 
   void initWidgetOptions(int quyen) {
-    _widgetOptions = <Widget>[
-      quyen != 1
-          ? HomePage(
-              loginResponse: loginResponse,
-            )
-          : UserListScreen(
-              response: loginResponse,
-            ),
-      quyen != 1
-          ? DetailPage(
-              loginResponse: loginResponse,
-            )
-          : DeviceListScreen(),
-      quyen != 1 ? Container() : DepartmentListScreen(),
-      quyen != 1 ? AddPatientScreen() : AddScreen(),
-      UserProfilePage(
-        quyen: '1',
-      ),
-    ];
+    switch (quyen) {
+      case 1:
+        _widgetOptions = <Widget>[
+          UserListScreen(
+            response: loginResponse,
+          ),
+          DeviceListScreen(),
+          DepartmentListScreen(),
+          AddScreen(),
+          UserProfilePage(
+            quyen: '1',
+          ),
+        ];
+        break;
+      case 2:
+        _widgetOptions = <Widget>[
+          HomePage(),
+          DetailPage(),
+          AddPatientScreen(),
+          UserProfilePage(
+            quyen: '1',
+          ),
+        ];
+        break;
+    }
   }
 
   void _onItemTapped(int index) {

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health_care/dialogWidget/edit_department_dialog.dart';
+import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/model/department.dart';
@@ -16,8 +17,13 @@ class DepartmentListScreen extends StatefulWidget {
 }
 
 class _DepartmentListScreenState extends State<DepartmentListScreen> {
+  static const LOGIN_KHOA = 'loginkhoa';
+
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   List<Department> departments = List();
   MQTTClientWrapper mqttClientWrapper;
+
+  String pubTopic;
 
   @override
   void initState() {
@@ -32,7 +38,9 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
 
     Department department = Department('tenkhoa', 'makhoa', Constants.mac);
-    publishMessage('loginkhoa', jsonEncode(department));
+    pubTopic = LOGIN_KHOA;
+    publishMessage(pubTopic, jsonEncode(department));
+    showLoadingDialog();
   }
 
   Future<void> publishMessage(String topic, String message) async {
@@ -156,6 +164,10 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
                       departments.insert(index, department);
                       setState(() {});
                     },
+                    deleteCallback: (a) {
+                      departments.removeAt(index);
+                      setState(() {});
+                    },
                   ),
                 ),
               );
@@ -245,7 +257,16 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
     var response = DeviceResponse.fromJson(responseMap);
 
     departments = response.id.map((e) => Department.fromJson(e)).toList();
+    hideLoadingDialog();
     setState(() {});
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   @override

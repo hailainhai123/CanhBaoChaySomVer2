@@ -33,6 +33,7 @@ class _AddScreenState extends State<AddScreen> {
 
   @override
   void initState() {
+    showLoadingDialog();
     initMqtt();
     super.initState();
   }
@@ -80,14 +81,18 @@ class _AddScreenState extends State<AddScreen> {
                 FlatButton(
                   child: Text('Thêm tài khoản'),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddAccountScreen(
-                          dropDownItems: dropDownItems,
+                    if (dropDownItems.isEmpty) {
+                      showPopup(context);
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddAccountScreen(
+                            dropDownItems: dropDownItems,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 ),
               ],
@@ -108,14 +113,18 @@ class _AddScreenState extends State<AddScreen> {
                 FlatButton(
                   child: Text('Thêm thiết bị'),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddDeviceScreen(
-                          dropDownItems: dropDownItems,
+                    if (dropDownItems.isEmpty) {
+                      showPopup(context);
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddDeviceScreen(
+                            dropDownItems: dropDownItems,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
                   },
                 ),
               ],
@@ -160,6 +169,7 @@ class _AddScreenState extends State<AddScreen> {
     departments.forEach((element) {
       dropDownItems.add(element.makhoa);
     });
+    hideLoadingDialog();
     print('_AddScreenState.handle ${dropDownItems.length}');
   }
 
@@ -179,5 +189,16 @@ class _AddScreenState extends State<AddScreen> {
       await initMqtt();
       mqttClientWrapper.publishMessage(topic, message);
     }
+  }
+
+  void showPopup(context) {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              backgroundColor: Colors.transparent,
+              content: Text(
+                'Chưa có khoa',
+              ),
+            ));
   }
 }

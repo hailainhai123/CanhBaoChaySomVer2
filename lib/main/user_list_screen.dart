@@ -6,6 +6,7 @@ import 'package:health_care/dialogWidget/edit_user_dialog.dart';
 import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
+import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/department.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/response/device_response.dart';
@@ -23,28 +24,56 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   static const GET_DEPARTMENT = 'loginkhoa';
+  static const GET_USER = 'getuser';
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
   DeviceResponse response;
   List<User> users = List();
   MQTTClientWrapper mqttClientWrapper;
+  SharedPrefsHelper sharedPrefsHelper;
   List<Department> departments = List();
   var dropDownItems = [''];
   int selectedIndex;
+  String pubTopic;
 
   @override
   void initState() {
     initMqtt();
-    response = DeviceResponse.fromJson(widget.response);
-    print('_UserListScreenState.initState $response');
-    users = response.id.map((e) => User.fromJson(e)).toList();
+    sharedPrefsHelper = SharedPrefsHelper();
     super.initState();
+  }
+
+  Future<Null> getSharedPrefs() async {
+    setState(() async {
+      String email = await sharedPrefsHelper.getStringValuesSF('email');
+      String password = await sharedPrefsHelper.getStringValuesSF('password');
+
+      showLoadingDialog();
+      pubTopic = GET_USER;
+      publishMessage(
+        pubTopic,
+        jsonEncode(
+          User(
+            Constants.mac,
+            email,
+            password,
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+          ),
+        ),
+      );
+    });
   }
 
   Future<void> initMqtt() async {
     mqttClientWrapper = MQTTClientWrapper(
         () => print('Success'), (message) => handleUser(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
+    getSharedPrefs();
   }
 
   Future<bool> _onWillPop() async {
@@ -144,7 +173,8 @@ class _UserListScreenState extends State<UserListScreen> {
       onTap: () async {
         selectedIndex = index;
         Department d = Department('', '', Constants.mac);
-        publishMessage(GET_DEPARTMENT, jsonEncode(d));
+        pubTopic = GET_DEPARTMENT;
+        publishMessage(pubTopic, jsonEncode(d));
         showLoadingDialog();
       },
       child: Container(
@@ -207,37 +237,45 @@ class _UserListScreenState extends State<UserListScreen> {
   void handleUser(String message) async {
     Map responseMap = jsonDecode(message);
     var response = DeviceResponse.fromJson(responseMap);
-    departments = response.id.map((e) => Department.fromJson(e)).toList();
-    dropDownItems.clear();
-    departments.forEach((element) {
-      dropDownItems.add(element.makhoa);
-    });
-    print('_UserListScreenState.handleUser ${departments.length}');
-    print('_UserListScreenState.handleUser ${dropDownItems.length}');
-    hideLoadingDialog();
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0)),
-            //this right here
-            child: Container(
-              child: EditUserDialog(
-                user: users[selectedIndex],
-                dropDownItems: dropDownItems,
-                deleteCallback: (param) => {
-                  removeUser(selectedIndex),
-                },
-                updateCallback: (user) {
-                  users.removeAt(selectedIndex);
-                  users.insert(selectedIndex, user);
-                },
-              ),
-            ),
-          );
+    switch (pubTopic) {
+      case GET_DEPARTMENT:
+        departments = response.id.map((e) => Department.fromJson(e)).toList();
+        dropDownItems.clear();
+        departments.forEach((element) {
+          dropDownItems.add(element.makhoa);
         });
-    print('_EditUserDialogState.handle ${departments.length}');
+        hideLoadingDialog();
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                //this right here
+                child: Container(
+                  child: EditUserDialog(
+                    user: users[selectedIndex],
+                    dropDownItems: dropDownItems,
+                    deleteCallback: (param) => {
+                      removeUser(selectedIndex),
+                    },
+                    updateCallback: (user) {
+                      users.removeAt(selectedIndex);
+                      users.insert(selectedIndex, user);
+                      setState(() {});
+                    },
+                  ),
+                ),
+              );
+            });
+        print('_EditUserDialogState.handle ${departments.length}');
+        break;
+      case GET_USER:
+        users = response.id.map((e) => User.fromJson(e)).toList();
+        setState(() {});
+        hideLoadingDialog();
+        break;
+    }
   }
 
   void showLoadingDialog() {

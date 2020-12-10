@@ -1,14 +1,26 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:health_care/helper/loader.dart';
+import 'package:health_care/helper/models.dart';
+import 'package:health_care/helper/mqttClientWrapper.dart';
+import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/patient.dart';
+
+import '../helper/constants.dart' as Constants;
 
 class EditPatientDialog extends StatefulWidget {
   final Patient patient;
-  final Function(dynamic) callback;
+  final List<String> dropDownItems;
+  final Function(dynamic) updateCallback;
+  final Function(dynamic) deleteCallback;
 
   const EditPatientDialog({
     Key key,
     this.patient,
-    this.callback,
+    this.dropDownItems,
+    this.updateCallback,
+    this.deleteCallback,
   }) : super(key: key);
 
   @override
@@ -16,7 +28,12 @@ class EditPatientDialog extends StatefulWidget {
 }
 
 class _EditPatientDialogState extends State<EditPatientDialog> {
+  static const UPDATE_PATIENT = 'updatebenhnhan';
+  static const DELETE_PATIENT = 'deletebenhnhan';
+
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   final scrollController = ScrollController();
+  final idPatientController = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
@@ -25,20 +42,43 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
   final bedController = TextEditingController();
   final patientController = TextEditingController();
 
+  MQTTClientWrapper mqttClientWrapper;
+  SharedPrefsHelper sharedPrefsHelper;
+  String khoa;
+  String currentSelectedValue;
+  String pubTopic;
+  Patient updatedPatient;
+
   @override
   void initState() {
+    initMqtt();
     initController();
+    initSharedPrefs();
     super.initState();
   }
 
+  void initSharedPrefs() async {
+    sharedPrefsHelper = SharedPrefsHelper();
+    khoa = await sharedPrefsHelper.getStringValuesSF('khoa');
+  }
+
+  Future<void> initMqtt() async {
+    mqttClientWrapper =
+        MQTTClientWrapper(() => print('Success'), (message) => handle(message));
+    await mqttClientWrapper.prepareMqttClient(Constants.mac);
+  }
+
   void initController() async {
-    nameController.text = widget.patient.ten;
+    idPatientController.text = widget.patient.mabenhnhan;
+    nameController.text = widget.patient.tenDecode;
     phoneController.text = widget.patient.sdt;
-    addressController.text = widget.patient.nha;
-    idDeviceController.text = widget.patient.matb;
+    addressController.text = widget.patient.nhaDecode;
+    idDeviceController.text = widget.patient.mathietbi;
     roomController.text = widget.patient.phong;
     bedController.text = widget.patient.giuong;
-    patientController.text = widget.patient.benhan;
+    patientController.text = widget.patient.benhDecode;
+    currentSelectedValue = widget.patient.mathietbi;
+    setState(() {});
   }
 
   @override
@@ -59,7 +99,13 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTempLayout(
-                  double.parse(widget.patient.nhietdo),
+                  widget.patient.nhietdo,
+                ),
+                buildTextField(
+                  'Mã bệnh nhân',
+                  Icon(Icons.email),
+                  TextInputType.text,
+                  idPatientController,
                 ),
                 buildTextField(
                   'Tên',
@@ -103,6 +149,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                   TextInputType.text,
                   patientController,
                 ),
+                buildDepartment(),
                 deleteButton(),
                 buildButton(),
               ],
@@ -154,6 +201,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         controller: controller,
         keyboardType: keyboardType,
         autocorrect: false,
+        enabled: labelText == 'Mã bệnh nhân' ? false : true,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
           labelText: labelText,
@@ -198,29 +246,31 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         onTap: () {
           showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-              title: new Text(
-                'Xóa bệnh nhân ?',
-              ),
-              actions: <Widget>[
-                new FlatButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: new Text(
-                    'Hủy',
+            builder: (context) =>
+                AlertDialog(
+                  title: new Text(
+                    'Xóa bệnh nhân ?',
                   ),
+                  actions: <Widget>[
+                    new FlatButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: new Text(
+                        'Hủy',
+                      ),
+                    ),
+                    new FlatButton(
+                      onPressed: () {
+                        EditPatient e =
+                        EditPatient(widget.patient.mabenhnhan, Constants.mac);
+                        pubTopic = DELETE_PATIENT;
+                        publishMessage(pubTopic, jsonEncode(e));
+                      },
+                      child: new Text(
+                        'Đồng ý',
+                      ),
+                    ),
+                  ],
                 ),
-                new FlatButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(false);
-                    widget.callback(true);
-                    Navigator.of(context).pop(false);
-                  },
-                  child: new Text(
-                    'Đồng ý',
-                  ),
-                ),
-              ],
-            ),
           );
         },
         child: Row(
@@ -260,7 +310,21 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                Navigator.pop(context);
+                updatedPatient = Patient(
+                  mabenhnhan,
+                  ten,
+                  sdt,
+                  nha,
+                  mathietbi,
+                  phong,
+                  giuong,
+                  benhan,
+                  nhietdo,
+                  makhoa,
+                  trangthai,
+                  mac,)
+                pubTopic = UPDATE_PATIENT;
+                publishMessage(pubTopic, jsonEncode(e));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -271,10 +335,86 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     );
   }
 
+  Widget buildDepartment() {
+    return Container(
+      height: 44,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          10,
+        ),
+        border: Border.all(
+          color: Colors.green,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 32,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Text(
+              'Mã thiết bị',
+            ),
+          ),
+          Expanded(
+            child: dropdownDepartment(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget dropdownDepartment() {
+    return Container(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Text("Chọn thiết bị"),
+          value: currentSelectedValue,
+          isDense: true,
+          onChanged: (newValue) {
+            setState(() {
+              currentSelectedValue = newValue;
+            });
+            print(currentSelectedValue);
+          },
+          items: widget.dropDownItems.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void showLoadingDialog() {
+    Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+  }
+
+  Future<void> publishMessage(String topic, String message) async {
+    if (mqttClientWrapper.connectionState ==
+        MqttCurrentConnectionState.CONNECTED) {
+      mqttClientWrapper.publishMessage(topic, message);
+    } else {
+      await initMqtt();
+      mqttClientWrapper.publishMessage(topic, message);
+    }
+  }
+
+  void handle(String message) {}
+
   @override
   void dispose() {
     scrollController.dispose();
     nameController.dispose();
+    idPatientController.dispose();
     phoneController.dispose();
     addressController.dispose();
     idDeviceController.dispose();
@@ -283,4 +423,17 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     patientController.dispose();
     super.dispose();
   }
+}
+
+class EditPatient {
+  final String mabenhnhan;
+  final String mac;
+
+  EditPatient(this.mabenhnhan, this.mac);
+
+  Map<String, dynamic> toJson() =>
+      {
+        'mabenhnhan': mabenhnhan,
+        'mac': mac,
+      };
 }

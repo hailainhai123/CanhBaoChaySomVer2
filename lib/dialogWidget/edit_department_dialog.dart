@@ -24,13 +24,15 @@ class EditDepartmentDialog extends StatefulWidget {
 }
 
 class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
+  static const UPDATE_KHOA = 'updatekhoa';
+  static const DELETE_KHOA = 'deletekhoa';
+
   final scrollController = ScrollController();
   final nameController = TextEditingController();
   final idController = TextEditingController();
   bool update = false;
-
+  String pubTopic;
   MQTTClientWrapper mqttClientWrapper;
-
   Department edittedDepartment;
 
   @override
@@ -94,6 +96,7 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
         controller: controller,
         keyboardType: keyboardType,
         autocorrect: false,
+        enabled: labelText == 'Mã' ? false : true,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
           labelText: labelText,
@@ -151,9 +154,10 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
                 ),
                 new FlatButton(
                   onPressed: () {
-                    Navigator.of(context).pop(false);
-                    Navigator.of(context).pop(false);
-                    update = false;
+                    pubTopic = DELETE_KHOA;
+                    var d = Department(widget.department.tenkhoa,
+                        widget.department.makhoa, Constants.mac);
+                    publishMessage(pubTopic, jsonEncode(d));
                   },
                   child: new Text(
                     'Đồng ý',
@@ -206,7 +210,8 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
                   idController.text,
                   Constants.mac,
                 );
-                publishMessage('updatekhoa', jsonEncode(edittedDepartment));
+                pubTopic = UPDATE_KHOA;
+                publishMessage(pubTopic, jsonEncode(edittedDepartment));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -238,8 +243,14 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
     print(
         '${responseMap['errorCode'] is String}, ${responseMap['result'] is String}');
     if (responseMap['errorCode'] == '0' && responseMap['result'] == 'true') {
-      if (update) {
-        widget.editCallback(edittedDepartment);
+      switch (pubTopic) {
+        case UPDATE_KHOA:
+          widget.editCallback(edittedDepartment);
+          break;
+        case DELETE_KHOA:
+          widget.deleteCallback('true');
+          Navigator.of(context).pop();
+          break;
       }
       Navigator.of(context).pop();
     }

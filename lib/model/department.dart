@@ -10,7 +10,7 @@ class Department {
   @ColumnInfo(name: 'makhoa', nullable: false)
   final String makhoa;
   @ColumnInfo(name: 'mac', nullable: false)
-  final String mac;
+  String mac;
 
   Department(this.tenkhoa, this.makhoa, this.mac);
 
