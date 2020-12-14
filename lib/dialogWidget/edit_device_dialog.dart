@@ -237,7 +237,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => Navigator.of(context).pop(false),
+                  onPressed: () => widget.updateCallback('abc'),
                   child: new Text(
                     'Hủy',
                   ),
@@ -286,6 +286,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
           Expanded(
             child: FlatButton(
               onPressed: () {
+                widget.updateCallback('abc');
                 Navigator.pop(context);
               },
               child: Text('Hủy'),

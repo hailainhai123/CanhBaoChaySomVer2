@@ -1,7 +1,5 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:health_care/addWidget/patient_page.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/model/device.dart';
 

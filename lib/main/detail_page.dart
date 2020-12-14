@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:health_care/dialogWidget/edit_patient_dialog.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/department.dart';
@@ -37,6 +36,7 @@ class _DetailPageState extends State<DetailPage>
 
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
+  bool isLoading = true;
   DeviceResponse response;
   List<Patient> patients = List();
   List<ThietBi> tbs = List();
@@ -78,11 +78,7 @@ class _DetailPageState extends State<DetailPage>
 
   void initSharedPrefs() async {
     sharedPrefsHelper = SharedPrefsHelper();
-    pubTopic = GET_BN;
-    showLoadingDialog();
-    khoa = await sharedPrefsHelper.getStringValuesSF('khoa');
-    GetBN getBN = GetBN(Constants.mac, khoa);
-    publishMessage(pubTopic, jsonEncode(getBN));
+    getPatients();
   }
 
   Future<void> initMqtt() async {
@@ -112,17 +108,21 @@ class _DetailPageState extends State<DetailPage>
           title: Text('Danh sách'),
           centerTitle: true,
         ),
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              buildTableTitle(),
-              horizontalLine(),
-              buildListView(),
-              horizontalLine(),
-              // _applianceGrid(homes, newheight),
-            ],
-          ),
-        ),
+        body: isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Container(
+                child: Column(
+                  children: <Widget>[
+                    buildTableTitle(),
+                    horizontalLine(),
+                    buildListView(),
+                    horizontalLine(),
+                    // _applianceGrid(homes, newheight),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -267,12 +267,13 @@ class _DetailPageState extends State<DetailPage>
           dropDownItems.add(element.makhoa);
         });
         hideLoadingDialog();
+        pubTopic = '';
         break;
       case GET_BN:
         patients = response.id.map((e) => Patient.fromJson(e)).toList();
-        print('_DetailPageState.handle ${patients[0].tenDecode}');
-        setState(() {});
         hideLoadingDialog();
+        setState(() {});
+        pubTopic = '';
         break;
       case LOGIN_DEVICE:
         tbs = response.id.map((e) => ThietBi.fromJson(e)).toList();
@@ -280,8 +281,8 @@ class _DetailPageState extends State<DetailPage>
         tbs.forEach((element) {
           dropDownItems.add(element.mathietbi);
         });
-        setState(() {});
         hideLoadingDialog();
+        setState(() {});
         await showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -294,19 +295,30 @@ class _DetailPageState extends State<DetailPage>
                     patient: patients[selectedIndex],
                     dropDownItems: dropDownItems,
                     deleteCallback: (param) => {
-                      removePatient(selectedIndex),
+                      // removePatient(selectedIndex),
+                      getPatients(),
                     },
-                    updateCallback: (param) => {
-                      patients.removeAt(selectedIndex),
-                      patients.insert(selectedIndex, param),
+                    updateCallback: (param){
+                      getPatients();
+                      // patients.removeAt(selectedIndex),
+                      // patients.insert(selectedIndex, param),
                     },
                   ),
                 ),
               );
             });
         print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
+        pubTopic = '';
         break;
     }
+  }
+
+  void getPatients() async{
+    pubTopic = GET_BN;
+    showLoadingDialog();
+    khoa = await sharedPrefsHelper.getStringValuesSF('khoa');
+    GetBN getBN = GetBN(Constants.mac, khoa);
+    publishMessage(pubTopic, jsonEncode(getBN));
   }
 
   void removePatient(int index) async {
@@ -336,11 +348,17 @@ class _DetailPageState extends State<DetailPage>
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 }
 

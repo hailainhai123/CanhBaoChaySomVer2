@@ -246,31 +246,33 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         onTap: () {
           showDialog(
             context: context,
-            builder: (context) =>
-                AlertDialog(
-                  title: new Text(
-                    'Xóa bệnh nhân ?',
+            builder: (context) => AlertDialog(
+              title: new Text(
+                'Xóa bệnh nhân ?',
+              ),
+              actions: <Widget>[
+                new FlatButton(
+                  onPressed: () {
+                    widget.updateCallback('abc');
+                    Navigator.of(context).pop();
+                  },
+                  child: new Text(
+                    'Hủy',
                   ),
-                  actions: <Widget>[
-                    new FlatButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: new Text(
-                        'Hủy',
-                      ),
-                    ),
-                    new FlatButton(
-                      onPressed: () {
-                        EditPatient e =
-                        EditPatient(widget.patient.mabenhnhan, Constants.mac);
-                        pubTopic = DELETE_PATIENT;
-                        publishMessage(pubTopic, jsonEncode(e));
-                      },
-                      child: new Text(
-                        'Đồng ý',
-                      ),
-                    ),
-                  ],
                 ),
+                new FlatButton(
+                  onPressed: () {
+                    EditPatient e =
+                        EditPatient(widget.patient.mabenhnhan, Constants.mac);
+                    pubTopic = DELETE_PATIENT;
+                    publishMessage(pubTopic, jsonEncode(e));
+                  },
+                  child: new Text(
+                    'Đồng ý',
+                  ),
+                ),
+              ],
+            ),
           );
         },
         child: Row(
@@ -302,7 +304,8 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
           Expanded(
             child: FlatButton(
               onPressed: () {
-                Navigator.pop(context);
+                widget.updateCallback('abc');
+                Navigator.of(context).pop();
               },
               child: Text('Hủy'),
             ),
@@ -311,20 +314,21 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
             child: RaisedButton(
               onPressed: () {
                 updatedPatient = Patient(
-                  mabenhnhan,
-                  ten,
-                  sdt,
-                  nha,
-                  mathietbi,
-                  phong,
-                  giuong,
-                  benhan,
-                  nhietdo,
-                  makhoa,
-                  trangthai,
-                  mac,)
+                  idPatientController.text,
+                  utf8.encode(nameController.text).toString(),
+                  phoneController.text,
+                  utf8.encode(addressController.text).toString(),
+                  currentSelectedValue,
+                  roomController.text,
+                  bedController.text,
+                  utf8.encode(patientController.text).toString(),
+                  0.0,
+                  khoa,
+                  '',
+                  Constants.mac,
+                );
                 pubTopic = UPDATE_PATIENT;
-                publishMessage(pubTopic, jsonEncode(e));
+                publishMessage(pubTopic, jsonEncode(updatedPatient));
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -408,7 +412,19 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     }
   }
 
-  void handle(String message) {}
+  void handle(String message) {
+    switch (pubTopic) {
+      case DELETE_PATIENT:
+        widget.deleteCallback('123');
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        break;
+      case UPDATE_PATIENT:
+        widget.updateCallback(updatedPatient);
+        Navigator.of(context).pop();
+        break;
+    }
+  }
 
   @override
   void dispose() {
@@ -431,8 +447,7 @@ class EditPatient {
 
   EditPatient(this.mabenhnhan, this.mac);
 
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         'mabenhnhan': mabenhnhan,
         'mac': mac,
       };

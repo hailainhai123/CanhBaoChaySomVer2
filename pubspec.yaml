@@ -44,8 +44,6 @@ dependencies:
   qrscan: ^0.2.17
   audioplayer: ^0.8.1
   onesignal_flutter: ^2.0.0
-  fl_chart: ^0.12.0
-  charts_flutter: ^0.9.0
 
 dev_dependencies:
   flutter_test:

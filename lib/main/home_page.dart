@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:health_care/dialogWidget/edit_patient_dialog.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/department.dart';
@@ -44,6 +43,8 @@ class _HomePageState extends State<HomePage>
   List<Patient> patients = List();
   List<ThietBi> tbs = List();
 
+  bool isLoading = true;
+
   Future<bool> _onWillPop() async {
     return (await showDialog(
           context: context,
@@ -77,6 +78,10 @@ class _HomePageState extends State<HomePage>
 
   void initSharedPrefs() async {
     sharedPrefsHelper = SharedPrefsHelper();
+    getPatients();
+  }
+
+  void getPatients() async {
     pubTopic = GET_BN_SOT;
     showLoadingDialog();
     khoa = await sharedPrefsHelper.getStringValuesSF('khoa');
@@ -131,17 +136,21 @@ class _HomePageState extends State<HomePage>
           title: Text('Trang chủ'),
           centerTitle: true,
         ),
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              buildTableTitle(),
-              horizontalLine(),
-              buildListView(),
-              horizontalLine(),
-              // _applianceGrid(homes, newheight),
-            ],
-          ),
-        ),
+        body: isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Container(
+                child: Column(
+                  children: <Widget>[
+                    buildTableTitle(),
+                    horizontalLine(),
+                    buildListView(),
+                    horizontalLine(),
+                    // _applianceGrid(homes, newheight),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -314,11 +323,13 @@ class _HomePageState extends State<HomePage>
                     patient: patients[selectedIndex],
                     dropDownItems: dropDownItems,
                     deleteCallback: (param) => {
-                      removePatient(selectedIndex),
+                      getPatients(),
+                      // removePatient(selectedIndex),
                     },
                     updateCallback: (param) => {
-                      patients.removeAt(selectedIndex),
-                      patients.insert(selectedIndex, param),
+                      getPatients(),
+                      // patients.removeAt(selectedIndex),
+                      // patients.insert(selectedIndex, param),
                     },
                   ),
                 ),
@@ -356,11 +367,17 @@ class _HomePageState extends State<HomePage>
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 }
 

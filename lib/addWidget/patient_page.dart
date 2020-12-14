@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:health_care/addWidget/line_chart.dart';
+import 'package:health_care/chart/animated_line_chart.dart';
+import 'package:health_care/chart/area_line_chart.dart';
+import 'package:health_care/chart/line_chart.dart';
+import 'package:health_care/common/pair.dart';
 import 'package:health_care/login/login_page.dart';
 import 'package:health_care/model/patient.dart';
 import 'package:health_care/model/user.dart';
 
 import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
+import 'fake_chart_series.dart';
 
 class PatientPage extends StatefulWidget {
   PatientPage({Key key, this.title}) : super(key: key);
@@ -18,31 +23,31 @@ class PatientPage extends StatefulWidget {
   _PatientPageState createState() => _PatientPageState();
 }
 
-class _PatientPageState extends State<PatientPage> {
+class _PatientPageState extends State<PatientPage> with FakeChartSeries {
+  int chartIndex = 0;
   MQTTClientWrapper mqttClientWrapper;
   User registerUser;
   Patient tempPatient = Patient(
     'BN11021',
     'Tên bệnh nhân',
     '099999999',
+    'HN',
+    'IVNR1000001',
+    '1',
+    '5',
     'Sốt Virus',
-    '',
-    '',
-    '',
-    '',
-    0.0,
-    '',
-    '',
+    39.0,
+    'PS1',
+    '1',
     '',
   );
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _informationController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  bool _success;
-  String _userEmail;
+  Timer timer;
+  int minute = 40;
 
   @override
   void initState() {
@@ -57,79 +62,6 @@ class _PatientPageState extends State<PatientPage> {
     super.initState();
   }
 
-  Widget _entryField(String title, TextEditingController _controller,
-      {bool isPassword = false}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-              validator: (String value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text!';
-                }
-                return null;
-              },
-              controller: _controller,
-              obscureText: isPassword,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  fillColor: Color(0xfff3f3f4),
-                  filled: true))
-        ],
-      ),
-    );
-  }
-
-  Widget _submitButton() {
-    return InkWell(
-      onTap: () {
-        print('submitButton onTap');
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.symmetric(vertical: 15),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                  color: Colors.grey.shade200,
-                  offset: Offset(2, 4),
-                  blurRadius: 5,
-                  spreadRadius: 2)
-            ],
-            gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Colors.lightBlueAccent, Colors.blueAccent])),
-        child: Text(
-          'Lưu thông tin',
-          style: TextStyle(fontSize: 20, color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-  Widget _emailPasswordWidget() {
-    return Column(
-      children: <Widget>[
-        _entryField("Email", _idController),
-        _entryField("Mật khẩu", _informationController, isPassword: true),
-        _entryField("Tên", _nameController),
-        _entryField("SĐT", _phoneNumberController),
-      ],
-    );
-  }
-
   Widget _appBar() {
     return AppBar(
       title: Text("Thông tin bệnh nhân"),
@@ -138,6 +70,36 @@ class _PatientPageState extends State<PatientPage> {
 
   @override
   Widget build(BuildContext context) {
+    Map<DateTime, double> line1 = createLine2();
+    Map<DateTime, double> line2 = createLine2_2();
+
+    LineChart chart;
+
+    timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+      print('_PatientPageState.buildTimer');
+      minute += 10;
+      line1[DateTime.now().subtract(Duration(minutes: 50))] = 15.0;
+      line1[DateTime.now().subtract(Duration(minutes: 60))] = 15.0;
+      line1[DateTime.now().subtract(Duration(minutes: 70))] = 15.0;
+      line1[DateTime.now().subtract(Duration(minutes: 80))] = 15.0;
+      line1[DateTime.now().subtract(Duration(minutes: 90))] = 15.0;
+      setState(() {});
+    });
+
+    if (chartIndex == 0) {
+      chart = LineChart.fromDateTimeMaps(
+          [line1, line2], [Colors.green, Colors.blue], ['C', 'C'],
+          tapTextFontWeight: FontWeight.w400);
+    } else if (chartIndex == 1) {
+      chart = LineChart.fromDateTimeMaps(
+          [createLineAlmostSaveValues()], [Colors.green], ['C'],
+          tapTextFontWeight: FontWeight.w400);
+    } else {
+      chart = AreaLineChart.fromDateTimeMaps(
+          [line1], [Colors.red.shade900], ['C'],
+          gradients: [Pair(Colors.yellow.shade400, Colors.red.shade700)]);
+    }
+
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: _appBar(),
@@ -149,20 +111,139 @@ class _PatientPageState extends State<PatientPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                SizedBox(
-                  height: 20,
-                ),
-                _emailPasswordWidget(),
-                SizedBox(
-                  height: 20,
-                ),
-                buildLineChart(),
-                _submitButton(),
-                SizedBox(height: 20)
+                buildPatientInfo(),
+                buildTempLayout(tempPatient.nhietdo),
+                buildChart(chart),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildPatientInfo() {
+    return Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '${tempPatient.tenDecode}',
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTempLayout(double temp) {
+    return Container(
+      width: 120,
+      height: 70,
+      decoration: BoxDecoration(
+        color: temp > 37.5 ? Colors.red : Colors.green,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/thermometer.png',
+            color: Colors.white,
+            width: 25,
+            height: 25,
+          ),
+          SizedBox(width: 5),
+          Text(
+            '$temp',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildChart(LineChart chart) {
+    return Container(
+      child: Expanded(
+        child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    FlatButton(
+                      shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Colors.black45),
+                          borderRadius: BorderRadius.all(Radius.circular(3))),
+                      child: Text(
+                        'LineChart',
+                        style: TextStyle(
+                            color: chartIndex == 0
+                                ? Colors.black
+                                : Colors.black12),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          chartIndex = 0;
+                        });
+                      },
+                    ),
+                    FlatButton(
+                      shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Colors.black45),
+                          borderRadius: BorderRadius.all(Radius.circular(3))),
+                      child: Text('LineChart2',
+                          style: TextStyle(
+                              color: chartIndex == 1
+                                  ? Colors.black
+                                  : Colors.black12)),
+                      onPressed: () {
+                        setState(() {
+                          chartIndex = 1;
+                        });
+                      },
+                    ),
+                    FlatButton(
+                      shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Colors.black45),
+                          borderRadius: BorderRadius.all(Radius.circular(3))),
+                      child: Text('AreaChart',
+                          style: TextStyle(
+                              color: chartIndex == 2
+                                  ? Colors.black
+                                  : Colors.black12)),
+                      onPressed: () {
+                        setState(() {
+                          chartIndex = 2;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AnimatedLineChart(
+                  chart,
+                  key: UniqueKey(),
+                ), //Unique key to force animations
+              )),
+              // SizedBox(width: 200, height: 50, child: Text('')),
+            ]),
       ),
     );
   }
@@ -190,10 +271,6 @@ class _PatientPageState extends State<PatientPage> {
       );
       // Scaffold.of(context).showSnackBar(snackbar);
     }
-  }
-
-  Widget buildLineChart() {
-    return SimpleTimeSeriesChart.withSampleData();
   }
 }
 

@@ -4,12 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_care/Widget/bezierContainer.dart';
-import 'package:health_care/device/temp_monitor_page.dart';
+import 'package:health_care/addWidget/patient_page.dart';
 import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/main/home_screen.dart';
-import 'package:health_care/model/device.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/navigator.dart';
 import 'package:health_care/response/device_response.dart';
@@ -169,9 +168,13 @@ class _LoginPageState extends State<LoginPage> {
           'password', _passwordController.text);
       await sharedPrefsHelper.addBoolToSF('switchValue', _switchValue);
       await sharedPrefsHelper.addBoolToSF('login', true);
+      await sharedPrefsHelper.addIntToSF('quyen', responseMap['quyen']);
       if (switchValue) {
-        navigatorPush(context,
-            TempPage(Device('', '', '', '', '', '', '', '', ''), iduser));
+        navigatorPush(
+            context,
+            PatientPage(
+              title: 'Patient Page',
+            ));
       } else {
         navigatorPush(
           context,

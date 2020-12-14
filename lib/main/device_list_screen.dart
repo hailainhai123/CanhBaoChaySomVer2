@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health_care/dialogWidget/edit_device_dialog.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/model/department.dart';
@@ -30,6 +29,8 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   int selectedIndex;
   List<Department> departments = List();
   var dropDownItems = [''];
+
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -59,11 +60,17 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   Future<bool> _onWillPop() async {
@@ -98,7 +105,9 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
           title: Text('Danh sách thiết bị'),
           centerTitle: true,
         ),
-        body: buildBody(),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : buildBody(),
       ),
     );
   }

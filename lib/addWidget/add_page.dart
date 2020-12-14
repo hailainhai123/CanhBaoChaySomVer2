@@ -9,6 +9,7 @@ import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/department.dart';
+import 'package:health_care/navigator.dart';
 import 'package:health_care/response/device_response.dart';
 
 import '../helper/constants.dart' as Constants;
@@ -66,97 +67,66 @@ class _AddScreenState extends State<AddScreen> {
       width: double.infinity,
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                10,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.add,
-                ),
-                FlatButton(
-                  child: Text('Thêm tài khoản'),
-                  onPressed: () {
-                    if (dropDownItems.isEmpty) {
-                      showPopup(context);
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddAccountScreen(
-                            dropDownItems: dropDownItems,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                10,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.add,
-                ),
-                FlatButton(
-                  child: Text('Thêm thiết bị'),
-                  onPressed: () {
-                    if (dropDownItems.isEmpty) {
-                      showPopup(context);
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddDeviceScreen(
-                            dropDownItems: dropDownItems,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                10,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.add,
-                ),
-                FlatButton(
-                  child: Text('Thêm khoa'),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddDepartmentScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+          buildButton('Thêm tài khoản', Icons.account_box_outlined, 1),
+          buildButton('Thêm thiết bị', Icons.devices, 2),
+          buildButton('Thêm khoa', Icons.meeting_room_outlined, 3),
         ],
+      ),
+    );
+  }
+
+  Widget buildButton(String text, IconData icon, int option) {
+    return GestureDetector(
+      onTap: () {
+        switch (option) {
+          case 1:
+            if (dropDownItems.isEmpty) {
+              showPopup(context);
+            } else {
+              navigatorPush(context, AddAccountScreen());
+            }
+            break;
+          case 2:
+            if (dropDownItems.isEmpty) {
+              showPopup(context);
+            } else {
+              navigatorPush(context, AddDeviceScreen());
+            }
+            break;
+          case 3:
+            navigatorPush(context, AddDepartmentScreen());
+            break;
+        }
+      },
+      child: Container(
+        height: 80,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(
+            10,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.add,
+              size: 25,
+            ),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 25,
+              ),
+            ),
+            Icon(
+              icon,
+              size: 25,
+            ),
+          ],
+        ),
       ),
     );
   }

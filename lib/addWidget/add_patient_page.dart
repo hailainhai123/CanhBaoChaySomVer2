@@ -5,7 +5,7 @@ import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
-import 'package:health_care/main/detail_page.dart';
+import 'package:health_care/main/home_screen.dart';
 import 'package:health_care/model/department.dart';
 import 'package:health_care/model/patient.dart';
 import 'package:health_care/model/thietbi.dart';
@@ -84,7 +84,11 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
         break;
       case ADD_PATIENT:
-        navigatorPush(context, DetailPage());
+        navigatorPush(
+            context,
+            HomeScreen(
+              index: 1,
+            ));
         break;
       case LOGIN_DEVICE:
         tbs = response.id.map((e) => ThietBi.fromJson(e)).toList();

@@ -10,9 +10,10 @@ import 'package:health_care/main/user_list_screen.dart';
 import 'package:health_care/main/user_profile_page.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key key, this.loginResponse}) : super(key: key);
+  HomeScreen({Key key, this.loginResponse, this.index}) : super(key: key);
 
   final Map loginResponse;
+  final int index;
 
   @override
   _HomeScreenState createState() => _HomeScreenState(loginResponse);
@@ -23,21 +24,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final Map loginResponse;
   int _selectedIndex = 0;
+  int quyen;
   SharedPrefsHelper sharedPrefsHelper;
 
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static List<Widget> _widgetOptions;
-  static List<BottomNavigationBarItem> bottomBarItems;
+  static List<Widget> _widgetOptions = List();
+  static List<BottomNavigationBarItem> bottomBarItems = List();
 
   @override
   void initState() {
     sharedPrefsHelper = SharedPrefsHelper();
-
     initBottomBarItems(loginResponse['quyen']);
     initWidgetOptions(loginResponse['quyen']);
     sharedPrefsHelper.addStringToSF('khoa', loginResponse['khoa']);
+    // if (widget.index == null) {
+    //   _selectedIndex = 0;
+    // } else {
+    //   _selectedIndex = widget.index;
+    // }
+    // getPermission();
     super.initState();
+  }
+
+  void getPermission() async {
+    quyen = await sharedPrefsHelper.getIntValuesSF('quyen');
+    print('_HomeScreenState.getPermission ${quyen.runtimeType} - $_selectedIndex');
+    initBottomBarItems(quyen);
+    initWidgetOptions(quyen);
+    sharedPrefsHelper.addStringToSF('khoa', loginResponse['khoa']);
   }
 
   void initBottomBarItems(int quyen) {
@@ -104,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void initWidgetOptions(int quyen) {
+    print('_HomeScreenState.initWidgetOptions');
     switch (quyen) {
       case 1:
         _widgetOptions = <Widget>[
@@ -146,6 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildBody() {
+    print('_HomeScreenState.buildBody ${_widgetOptions.length}');
     return Container(
       child: Center(
         child: _widgetOptions.elementAt(_selectedIndex),

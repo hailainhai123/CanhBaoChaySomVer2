@@ -105,4 +105,9 @@ class Patient {
       return benhan;
     }
   }
+
+  @override
+  String toString() {
+    return '$mabenhnhan-$ten-$sdt-$nha-$mathietbi-$nhietdo-$phong-$giuong-$benhan-$makhoa-$mac-$trangthai';
+  }
 }

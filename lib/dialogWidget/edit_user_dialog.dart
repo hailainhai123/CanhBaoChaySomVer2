@@ -305,7 +305,7 @@ class _EditUserDialogState extends State<EditUserDialog>
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => Navigator.of(context).pop(false),
+                  onPressed: () => widget.updateCallback(updatedUser),
                   child: new Text(
                     'Hủy',
                   ),
@@ -355,6 +355,7 @@ class _EditUserDialogState extends State<EditUserDialog>
             child: FlatButton(
               onPressed: () {
                 Navigator.pop(context);
+                widget.updateCallback('abc');
               },
               child: Text('Hủy'),
             ),

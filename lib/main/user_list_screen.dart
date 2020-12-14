@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health_care/dialogWidget/edit_user_dialog.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
@@ -36,6 +35,8 @@ class _UserListScreenState extends State<UserListScreen> {
   int selectedIndex;
   String pubTopic;
 
+  bool isLoading = true;
+
   @override
   void initState() {
     initMqtt();
@@ -45,28 +46,31 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Future<Null> getSharedPrefs() async {
     setState(() async {
-      String email = await sharedPrefsHelper.getStringValuesSF('email');
-      String password = await sharedPrefsHelper.getStringValuesSF('password');
-
-      showLoadingDialog();
-      pubTopic = GET_USER;
-      publishMessage(
-        pubTopic,
-        jsonEncode(
-          User(
-            Constants.mac,
-            email,
-            password,
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-          ),
-        ),
-      );
+      getUsers();
     });
+  }
+
+  void getUsers() async {
+    String email = await sharedPrefsHelper.getStringValuesSF('email');
+    String password = await sharedPrefsHelper.getStringValuesSF('password');
+    showLoadingDialog();
+    pubTopic = GET_USER;
+    publishMessage(
+      pubTopic,
+      jsonEncode(
+        User(
+          Constants.mac,
+          email,
+          password,
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+        ),
+      ),
+    );
   }
 
   Future<void> initMqtt() async {
@@ -108,7 +112,9 @@ class _UserListScreenState extends State<UserListScreen> {
           title: Text('Danh sách tài khoản'),
           centerTitle: true,
         ),
-        body: buildBody(),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : buildBody(),
       ),
     );
   }
@@ -257,12 +263,14 @@ class _UserListScreenState extends State<UserListScreen> {
                     user: users[selectedIndex],
                     dropDownItems: dropDownItems,
                     deleteCallback: (param) => {
-                      removeUser(selectedIndex),
+                      getUsers(),
+                      // removeUser(selectedIndex),
                     },
                     updateCallback: (user) {
-                      users.removeAt(selectedIndex);
-                      users.insert(selectedIndex, user);
-                      setState(() {});
+                      getUsers();
+                      // users.removeAt(selectedIndex);
+                      // users.insert(selectedIndex, user);
+                      // setState(() {});
                     },
                   ),
                 ),
@@ -279,11 +287,17 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   Future<void> publishMessage(String topic, String message) async {
