@@ -94,12 +94,6 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   passwordController,
                 ),
                 buildTextField(
-                  'Mã Khoa',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  makhoaController,
-                ),
-                buildTextField(
                   'Tên',
                   Icon(Icons.perm_identity),
                   TextInputType.text,
@@ -117,8 +111,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   TextInputType.text,
                   phoneController,
                 ),
-                dropdownDepartment(),
-                dropDownPermission(),
+                buildDepartment('Khoa'),
+                buildPermissionContainer('Quyền'),
                 buildButton(),
               ],
             ),
@@ -196,6 +190,70 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               color: Colors.blue,
               child: Text('Lưu'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDepartment(String label) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          5,
+        ),
+        border: Border.all(
+          color: Colors.green,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 8,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+              child: Text(
+            label,
+            style: TextStyle(fontSize: 16),
+          )),
+          Expanded(
+            child: dropdownDepartment(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildPermissionContainer(String label) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          5,
+        ),
+        border: Border.all(
+          color: Colors.green,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 8,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+              child: Text(
+            label,
+            style: TextStyle(fontSize: 16),
+          )),
+          Expanded(
+            child: dropDownPermission(),
           ),
         ],
       ),

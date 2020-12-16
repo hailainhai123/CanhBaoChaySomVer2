@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:health_care/dialogWidget/edit_user_dialog.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/login/login_page.dart';
+import 'package:health_care/model/department.dart';
 import 'package:health_care/model/user.dart';
+import 'package:health_care/navigator.dart';
+import 'package:health_care/response/device_response.dart';
 import 'package:health_care/response/user_response.dart';
 
 import '../helper/constants.dart' as Constants;
@@ -20,6 +24,8 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  static const GET_INFO_USER = 'getinfouser';
+  static const GET_DEPARTMENT = 'loginkhoa';
   MQTTClientWrapper mqttClientWrapper;
   SharedPrefsHelper sharedPrefsHelper;
   final TextEditingController _emailController = TextEditingController();
@@ -30,6 +36,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final TextEditingController _departmentController = TextEditingController();
   final TextEditingController _permissionController = TextEditingController();
   User user;
+  String pubTopic = '';
+  List<Department> departments = List();
+  var dropDownItems = [''];
+
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -53,13 +64,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
     mqttClientWrapper =
         MQTTClientWrapper(() => print('Success'), (message) => handle(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
+    getInfoUser();
+  }
 
+  void getInfoUser() async {
+    pubTopic = GET_INFO_USER;
     String email = await sharedPrefsHelper.getStringValuesSF('email');
     String password = await sharedPrefsHelper.getStringValuesSF('password');
     if (email.isNotEmpty && password.isNotEmpty) {
       User user = User(Constants.mac, email, password, '', '', '', '', '', '');
       mqttClientWrapper.publishMessage('getinfouser', jsonEncode(user));
     }
+    showLoadingDialog();
+  }
+
+  void getDepartment() {
+    Department d = Department('', '', Constants.mac);
+    pubTopic = GET_DEPARTMENT;
+    publishMessage(pubTopic, jsonEncode(d));
+    showLoadingDialog();
   }
 
   Widget _placeContainer(String title, Color color, Widget icon) {
@@ -92,18 +115,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _editContainer(String title, Color color, Widget icon) {
     return InkWell(
       onTap: () async {
-        await showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                //this right here
-                child: Container(
-                  child: _emailPasswordWidget(),
-                ),
-              );
-            });
+        getDepartment();
+//        await showDialog(
+//            context: context,
+//            builder: (BuildContext context) {
+//              return Dialog(
+//                shape: RoundedRectangleBorder(
+//                    borderRadius: BorderRadius.circular(10.0)),
+//                //this right here
+//                child: Container(
+//                  child: _emailPasswordWidget(),
+//                ),
+//              );
+//            });
         // String iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
         // Home h = Home('', iduser, '', '', Constants.mac);
         // publishMessage('getinfouser', jsonEncode(h));
@@ -195,9 +219,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget _emailPasswordWidget() {
     _emailController.text = user.user;
     _passwordController.text = user.pass;
-    _nameController.text = user.ten;
+    _nameController.text = user.tenDecode;
     _phoneNumberController.text = user.sdt;
-    _addressController.text = user.nha;
+    _addressController.text = user.nhaDecode;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -283,76 +307,86 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: Text('Tài khoản'),
         centerTitle: true,
       ),
-      body: Container(
-        color: Color(0xffe7eaf2),
-        height: double.infinity,
-        child: SingleChildScrollView(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.fromLTRB(40.0, 40, 40, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircleAvatar(
-                    backgroundColor: Colors.brown.shade800,
-                    minRadius: 40,
-                    child: Text(
-                      user.ten[0],
-                      style: TextStyle(fontSize: 30),
-                    )),
-                SizedBox(
-                  height: 15,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+              color: Color(0xffe7eaf2),
+              height: double.infinity,
+              child: SingleChildScrollView(
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.fromLTRB(40.0, 40, 40, 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      user.tenDecode.isEmpty
+                          ? Container()
+                          : CircleAvatar(
+                              backgroundColor: Colors.brown.shade800,
+                              minRadius: 40,
+                              child: Text(
+                                user.tenDecode[0],
+                                style: TextStyle(fontSize: 30),
+                              )),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      _placeContainer(
+                          user.tenDecode != null
+                              ? 'Tên: ${user.tenDecode}'
+                              : 'Chưa nhập tên',
+                          Color(0xff8f48ff),
+                          null),
+                      _placeContainer(
+                          user.user != null
+                              ? 'Tên ĐN: ${user.user}'
+                              : 'Tên ĐN: ',
+                          Color(0xff526fff),
+                          null),
+                      _placeContainer(
+                          user.nhaDecode != null
+                              ? 'Địa chỉ: ${user.nhaDecode}'
+                              : 'Chưa nhập địa chỉ',
+                          Color(0xff8f48ff),
+                          null),
+                      _placeContainer(
+                          user.sdt != null
+                              ? 'SĐT: ${user.sdt}'
+                              : 'Chưa nhập SĐT',
+                          Color(0xff8f48ff),
+                          null),
+                      _placeContainer(
+                          user.quyen != null
+                              ? 'Quyền: ${user.quyen}'
+                              : 'Chưa có quyền',
+                          Color(0xff8f48ff),
+                          null),
+                      user.quyen != '1'
+                          ? _placeContainer(
+                              user.khoa != null
+                                  ? 'Khoa: ${user.khoa}'
+                                  : 'Chưa có khoa',
+                              Color(0xff8f48ff),
+                              null)
+                          : Container(),
+                      _editContainer(
+                          'Sửa thông tin', Color(0xffffffff), Icon(Icons.edit)),
+                      int.parse(widget.quyen) == 0
+                          ? _placeContainer('Thêm tài khoản', Color(0xffffffff),
+                              Icon(Icons.add))
+                          : Container(),
+                      _logoutContainer(
+                          'Đăng xuất',
+                          Color(0xffffffff),
+                          Icon(
+                            Icons.power_settings_new,
+                            color: Colors.red,
+                          )),
+                    ],
+                  ),
                 ),
-                _placeContainer(
-                    user.ten != null ? 'Tên: ${user.ten}' : 'Chưa nhập tên',
-                    Color(0xff8f48ff),
-                    null),
-                _placeContainer(
-                    user.user != null ? 'Tên ĐN: ${user.user}' : 'Tên ĐN: ',
-                    Color(0xff526fff),
-                    null),
-                _placeContainer(
-                    user.nha != null
-                        ? 'Địa chỉ: ${user.nha}'
-                        : 'Chưa nhập địa chỉ',
-                    Color(0xff8f48ff),
-                    null),
-                _placeContainer(
-                    user.sdt != null ? 'SĐT: ${user.sdt}' : 'Chưa nhập SĐT',
-                    Color(0xff8f48ff),
-                    null),
-                _placeContainer(
-                    user.quyen != null
-                        ? 'Quyền: ${user.quyen}'
-                        : 'Chưa có quyền',
-                    Color(0xff8f48ff),
-                    null),
-                user.quyen != '1'
-                    ? _placeContainer(
-                        user.khoa != null
-                            ? 'Khoa: ${user.khoa}'
-                            : 'Chưa có khoa',
-                        Color(0xff8f48ff),
-                        null)
-                    : Container(),
-                _editContainer(
-                    'Sửa thông tin', Color(0xffffffff), Icon(Icons.edit)),
-                int.parse(widget.quyen) == 0
-                    ? _placeContainer(
-                        'Thêm tài khoản', Color(0xffffffff), Icon(Icons.add))
-                    : Container(),
-                _logoutContainer(
-                    'Đăng xuất',
-                    Color(0xffffffff),
-                    Icon(
-                      Icons.power_settings_new,
-                      color: Colors.red,
-                    )),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -392,13 +426,53 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   handle(String message) async {
-    UserResponse response = UserResponse.fromJson(jsonDecode(message));
-    //
+    DeviceResponse response = DeviceResponse.fromJson(jsonDecode(message));
+
     print('Response: ${response.id}');
-    setState(() {
-      user = User.fromJson(response.id);
-    });
-    print(user.toString());
+
+    switch (pubTopic) {
+      case GET_DEPARTMENT:
+        departments = response.id.map((e) => Department.fromJson(e)).toList();
+        dropDownItems.clear();
+        departments.forEach((element) {
+          dropDownItems.add(element.makhoa);
+        });
+        hideLoadingDialog();
+        print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
+        print('_DeviceListScreenState.handleDevice ${user.toString()}');
+
+        await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                //this right here
+                child: Container(
+                  child: EditUserDialog(
+                    user: user,
+                    dropDownItems: dropDownItems,
+                    deleteCallback: (param) {
+                      getInfoUser();
+                    },
+                    updateCallback: (updatedDevice) {
+                      getInfoUser();
+                    },
+                  ),
+                ),
+              );
+            });
+
+        break;
+      case GET_INFO_USER:
+        setState(() {
+          List<User> users = response.id.map((e) => User.fromJson(e)).toList();
+          user = users[0];
+        });
+        hideLoadingDialog();
+        break;
+    }
+    pubTopic = '';
   }
 
   Future<void> _tryEdit() async {
@@ -415,6 +489,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
     user.iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
     publishMessage('updateuser', jsonEncode(user));
+  }
+
+  void showLoadingDialog() {
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
+  }
+
+  void hideLoadingDialog() {
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   Future<void> publishMessage(String topic, String message) async {

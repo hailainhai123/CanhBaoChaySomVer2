@@ -41,7 +41,6 @@ class _EditUserDialogState extends State<EditUserDialog>
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
   final departmentController = TextEditingController();
-  final permissionController = TextEditingController();
 
   final List<Tab> myTabs = <Tab>[
     Tab(
@@ -60,6 +59,8 @@ class _EditUserDialogState extends State<EditUserDialog>
   String pubTopic = '';
   String currentSelectedValue;
   TabController _tabController;
+
+  String permission;
 
   @override
   void initState() {
@@ -106,7 +107,7 @@ class _EditUserDialogState extends State<EditUserDialog>
     phoneController.text = widget.user.sdt;
     addressController.text = widget.user.nhaDecode;
     departmentController.text = widget.user.khoa;
-    permissionController.text = widget.user.quyen;
+    permission = widget.user.quyen;
     currentSelectedValue = widget.user.khoa;
   }
 
@@ -221,17 +222,69 @@ class _EditUserDialogState extends State<EditUserDialog>
               //   TextInputType.text,
               //   departmentController,
               // ),
-              buildTextField(
-                'Quyền',
-                Icon(Icons.location_city),
-                TextInputType.text,
-                permissionController,
-              ),
+              buildPermissionContainer('Quyền'),
               widget.user.quyen == '1' ? Container() : buildDepartment(),
               deleteButton(),
               buildButton(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildPermissionContainer(String label) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          5,
+        ),
+        border: Border.all(
+          color: Colors.green,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 8,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+              child: Text(
+            label,
+            style: TextStyle(fontSize: 16),
+          )),
+          Expanded(
+            child: dropDownPermission(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget dropDownPermission() {
+    var permissionValue = ['1', '2'];
+    return Container(
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Text("Chọn quyền"),
+          value: permission,
+          isDense: true,
+          onChanged: (newValue) {
+            setState(() {
+              permission = newValue;
+            });
+            print(permission);
+          },
+          items: permissionValue.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
       ),
     );
@@ -449,7 +502,7 @@ class _EditUserDialogState extends State<EditUserDialog>
       phoneController.text,
       utf8.encode(addressController.text).toString(),
       currentSelectedValue,
-      permissionController.text,
+      permission,
       '',
     );
     updatedUser.iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
@@ -465,7 +518,7 @@ class _EditUserDialogState extends State<EditUserDialog>
       phoneController.text,
       utf8.encode(addressController.text).toString(),
       currentSelectedValue,
-      permissionController.text,
+      permission,
       '',
     );
     updatedUser.passmoi = newPasswordController.text;
@@ -494,7 +547,6 @@ class _EditUserDialogState extends State<EditUserDialog>
     addressController.dispose();
     passwordController.dispose();
     departmentController.dispose();
-    permissionController.dispose();
     newPasswordController.dispose();
     _tabController.dispose();
     super.dispose();

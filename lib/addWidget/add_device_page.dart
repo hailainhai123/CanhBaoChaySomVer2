@@ -77,7 +77,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   TextInputType.visiblePassword,
                   idController,
                 ),
-                dropdownDepartment(),
+                buildDepartment('Khoa'),
                 buildButton(),
               ],
             ),
@@ -152,6 +152,38 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
               color: Colors.blue,
               child: Text('Lưu'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildDepartment(String label) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          5,
+        ),
+        border: Border.all(
+          color: Colors.green,
+        ),
+      ),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 8,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+              child: Text(
+            label,
+            style: TextStyle(fontSize: 16),
+          )),
+          Expanded(
+            child: dropdownDepartment(),
           ),
         ],
       ),

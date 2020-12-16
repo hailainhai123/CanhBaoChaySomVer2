@@ -69,9 +69,9 @@ class _AddScreenState extends State<AddScreen> {
       width: double.infinity,
       child: Column(
         children: [
+          buildButton('Thêm khoa', Icons.meeting_room_outlined, 3),
           buildButton('Thêm tài khoản', Icons.account_box_outlined, 1),
           buildButton('Thêm thiết bị', Icons.devices, 2),
-          buildButton('Thêm khoa', Icons.meeting_room_outlined, 3),
         ],
       ),
     );
