@@ -154,24 +154,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                   TextInputType.text,
                   nameController,
                 ),
-                buildTextField(
-                  'SĐT',
-                  Icon(Icons.vpn_key),
-                  TextInputType.visiblePassword,
-                  phoneController,
-                ),
-                buildTextField(
-                  'Địa chỉ',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  addressController,
-                ),
-                buildTextField(
-                  'Mã thiết bị',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  idDeviceController,
-                ),
+                buildDepartment(),
                 buildTextField(
                   'Phòng',
                   Icon(Icons.perm_identity),
@@ -185,12 +168,23 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                   bedController,
                 ),
                 buildTextField(
+                  'SĐT',
+                  Icon(Icons.vpn_key),
+                  TextInputType.visiblePassword,
+                  phoneController,
+                ),
+                buildTextField(
+                  'Địa chỉ',
+                  Icon(Icons.perm_identity),
+                  TextInputType.text,
+                  addressController,
+                ),
+                buildTextField(
                   'Bệnh án',
                   Icon(Icons.perm_identity),
                   TextInputType.text,
                   patientController,
                 ),
-                buildDepartment(),
                 buildButton(),
               ],
             ),
@@ -237,7 +231,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
       height: 44,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
-          10,
+          5,
         ),
         border: Border.all(
           color: Colors.green,
@@ -246,12 +240,14 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
               child: Text(
             'Thiết bị',
+            style: TextStyle(fontSize: 16),
           )),
           Expanded(
             child: dropdownDepartment(),
@@ -265,7 +261,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
     return Container(
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          hint: Text("Chọn khoa"),
+          hint: Text("Chọn thiết bị"),
           value: currentSelectedValue,
           isDense: true,
           onChanged: (newValue) {

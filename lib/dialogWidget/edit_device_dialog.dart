@@ -112,7 +112,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                   TextInputType.number,
                   timeController,
                 ),
-                dropdownDepartment(),
+                buildDepartment(),
                 deleteButton(),
                 buildButton(),
               ],
@@ -129,7 +129,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
-          10,
+          5,
         ),
         border: Border.all(
           color: Colors.green,
@@ -138,13 +138,16 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-              child: Text(
-            'Khoa',
-          )),
+            child: Text(
+              'Mã khoa',
+            ),
+          ),
           Expanded(
             child: dropdownDepartment(),
           ),
@@ -237,7 +240,9 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => widget.updateCallback('abc'),
+                  onPressed: () => {
+                    Navigator.of(context).pop(),
+                  },
                   child: new Text(
                     'Hủy',
                   ),
@@ -287,7 +292,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             child: FlatButton(
               onPressed: () {
                 widget.updateCallback('abc');
-                Navigator.pop(context);
+                Navigator.of(context).pop();
               },
               child: Text('Hủy'),
             ),

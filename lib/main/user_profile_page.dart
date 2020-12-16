@@ -5,7 +5,6 @@ import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/login/login_page.dart';
-import 'package:health_care/model/home.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/response/user_response.dart';
 
@@ -51,14 +50,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> initMqtt() async {
-    String iduser = await sharedPrefsHelper.getStringValuesSF('iduser');
-    Home h = Home('', iduser, '', '', Constants.mac);
-
     mqttClientWrapper =
         MQTTClientWrapper(() => print('Success'), (message) => handle(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
 
-    mqttClientWrapper.publishMessage('getinfouser', jsonEncode(h));
+    String email = await sharedPrefsHelper.getStringValuesSF('email');
+    String password = await sharedPrefsHelper.getStringValuesSF('password');
+    if (email.isNotEmpty && password.isNotEmpty) {
+      User user = User(Constants.mac, email, password, '', '', '', '', '', '');
+      mqttClientWrapper.publishMessage('getinfouser', jsonEncode(user));
+    }
   }
 
   Widget _placeContainer(String title, Color color, Widget icon) {
@@ -321,7 +322,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     Color(0xff8f48ff),
                     null),
                 _placeContainer(
-                    user.quyen != null ? 'Quyền: ${user.quyen}' : 'Chưa có quyền',
+                    user.quyen != null
+                        ? 'Quyền: ${user.quyen}'
+                        : 'Chưa có quyền',
                     Color(0xff8f48ff),
                     null),
                 user.quyen != '1'

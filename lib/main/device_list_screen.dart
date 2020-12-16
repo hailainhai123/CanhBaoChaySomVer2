@@ -42,7 +42,10 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
     mqttClientWrapper = MQTTClientWrapper(
         () => print('Success'), (message) => handleDevice(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
+    getDevices();
+  }
 
+  void getDevices() async {
     ThietBi t = ThietBi('', '', '', '', '', Constants.mac);
     pubTopic = LOGIN_DEVICE;
     publishMessage(pubTopic, jsonEncode(t));
@@ -285,13 +288,10 @@ class _DeviceListScreenState extends State<DeviceListScreen> {
                     thietbi: tbs[selectedIndex],
                     dropDownItems: dropDownItems,
                     deleteCallback: (param) {
-                      removeDevice(selectedIndex);
-                      setState(() {});
+                      getDevices();
                     },
                     updateCallback: (updatedDevice) {
-                      tbs.removeAt(selectedIndex);
-                      tbs.insert(selectedIndex, updatedDevice);
-                      setState(() {});
+                      getDevices();
                     },
                   ),
                 ),

@@ -272,6 +272,12 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
       // Scaffold.of(context).showSnackBar(snackbar);
     }
   }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
 }
 
 class LinearSales {

@@ -95,14 +95,15 @@ class _LoginPageState extends State<LoginPage> {
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
   }
 
-  Future<Null> getSharedPrefs() async {
-    setState(() async {
-      _emailController.text =
-          await sharedPrefsHelper.getStringValuesSF('email');
-      _passwordController.text =
-          await sharedPrefsHelper.getStringValuesSF('password');
-      _switchValue = await sharedPrefsHelper.getBoolValuesSF('switchValue');
-    });
+  Future<void> getSharedPrefs() async {
+    _emailController.text = await sharedPrefsHelper.getStringValuesSF('email');
+    _passwordController.text =
+        await sharedPrefsHelper.getStringValuesSF('password');
+    _switchValue = await sharedPrefsHelper.getBoolValuesSF('switchValue');
+    if (_emailController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty) {
+      await _tryLogin();
+    }
   }
 
   @override

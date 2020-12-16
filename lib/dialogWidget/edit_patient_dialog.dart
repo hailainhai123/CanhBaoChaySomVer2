@@ -98,9 +98,9 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                buildTempLayout(
-                  widget.patient.nhietdo,
-                ),
+                // buildTempLayout(
+                //   widget.patient.nhietdo,
+                // ),
                 buildTextField(
                   'Mã bệnh nhân',
                   Icon(Icons.email),
@@ -112,6 +112,19 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                   Icon(Icons.email),
                   TextInputType.text,
                   nameController,
+                ),
+                buildDepartment(),
+                buildTextField(
+                  'Phòng',
+                  Icon(Icons.perm_identity),
+                  TextInputType.text,
+                  roomController,
+                ),
+                buildTextField(
+                  'Giường',
+                  Icon(Icons.perm_identity),
+                  TextInputType.text,
+                  bedController,
                 ),
                 buildTextField(
                   'SĐT',
@@ -126,30 +139,11 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                   addressController,
                 ),
                 buildTextField(
-                  'Mã thiết bị',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  idDeviceController,
-                ),
-                buildTextField(
-                  'Phòng',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  roomController,
-                ),
-                buildTextField(
-                  'Giường',
-                  Icon(Icons.perm_identity),
-                  TextInputType.text,
-                  bedController,
-                ),
-                buildTextField(
                   'Bệnh án',
                   Icon(Icons.perm_identity),
                   TextInputType.text,
                   patientController,
                 ),
-                buildDepartment(),
                 deleteButton(),
                 buildButton(),
               ],
@@ -345,7 +339,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(
-          10,
+          5,
         ),
         border: Border.all(
           color: Colors.green,
@@ -354,8 +348,10 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Text(

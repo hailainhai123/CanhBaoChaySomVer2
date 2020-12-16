@@ -161,13 +161,13 @@ class _HomePageState extends State<HomePage>
       height: 40,
       child: Row(
         children: [
-          buildTextLabel('STT', 3),
+          buildTextLabel('TT', 2),
           verticalLine(),
-          buildTextLabel('Tên', 15),
+          buildTextLabel('Phòng', 4),
           verticalLine(),
           buildTextLabel('G', 2),
           verticalLine(),
-          buildTextLabel('P', 2),
+          buildTextLabel('Tên', 15),
           verticalLine(),
           buildTempColumn(),
         ],
@@ -222,13 +222,13 @@ class _HomePageState extends State<HomePage>
               height: 40,
               child: Row(
                 children: [
-                  buildTextData('${index + 1}', 3),
+                  buildTextData('${index + 1}', 2),
                   verticalLine(),
-                  buildTextData(patients[index].tenDecode, 15),
+                  buildTextData(patients[index].phong, 4),
                   verticalLine(),
                   buildTextData(patients[index].giuong, 2),
                   verticalLine(),
-                  buildTextData(patients[index].phong, 2),
+                  buildTextData(patients[index].tenDecode, 15),
                   verticalLine(),
                   tempData(patients[index].nhietdo.toString(), 4),
                 ],

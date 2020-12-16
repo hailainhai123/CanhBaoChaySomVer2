@@ -305,7 +305,7 @@ class _EditUserDialogState extends State<EditUserDialog>
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => widget.updateCallback(updatedUser),
+                  onPressed: () => Navigator.of(context).pop(),
                   child: new Text(
                     'Hủy',
                   ),
@@ -398,8 +398,10 @@ class _EditUserDialogState extends State<EditUserDialog>
       margin: const EdgeInsets.symmetric(
         horizontal: 32,
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Text(
