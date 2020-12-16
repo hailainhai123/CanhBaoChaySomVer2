@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:health_care/dialogWidget/edit_department_dialog.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/model/department.dart';
@@ -25,6 +24,8 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
 
   String pubTopic;
 
+  bool isLoading = true;
+
   @override
   void initState() {
     departments.add(Department('tenkhoa', 'makhoa', 'mac'));
@@ -36,7 +37,10 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
     mqttClientWrapper = MQTTClientWrapper(
         () => print('Success'), (message) => handleDepartment(message));
     await mqttClientWrapper.prepareMqttClient(Constants.mac);
+    getDepartments();
+  }
 
+  void getDepartments(){
     Department department = Department('tenkhoa', 'makhoa', Constants.mac);
     pubTopic = LOGIN_KHOA;
     publishMessage(pubTopic, jsonEncode(department));
@@ -85,7 +89,9 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
           title: Text('Danh sách thiết bị'),
           centerTitle: true,
         ),
-        body: buildBody(),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : buildBody(),
       ),
     );
   }
@@ -160,13 +166,15 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
                     department: departments[index],
                     editCallback: (department) {
                       print('_DepartmentListScreenState.itemView $department');
-                      departments.removeAt(index);
-                      departments.insert(index, department);
-                      setState(() {});
+                      getDepartments();
+                      // departments.removeAt(index);
+                      // departments.insert(index, department);
+                      // setState(() {});
                     },
                     deleteCallback: (a) {
-                      departments.removeAt(index);
-                      setState(() {});
+                      getDepartments();
+                      // departments.removeAt(index);
+                      // setState(() {});
                     },
                   ),
                 ),
@@ -262,11 +270,17 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   @override

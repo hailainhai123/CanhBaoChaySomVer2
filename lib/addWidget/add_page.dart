@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:health_care/addWidget/add_account_page.dart';
 import 'package:health_care/addWidget/add_department_page.dart';
 import 'package:health_care/addWidget/add_device_page.dart';
-import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
@@ -32,6 +31,8 @@ class _AddScreenState extends State<AddScreen> {
   List<Department> departments = List();
   List<String> dropDownItems = List();
 
+  bool isLoading = true;
+
   @override
   void initState() {
     showLoadingDialog();
@@ -58,7 +59,8 @@ class _AddScreenState extends State<AddScreen> {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body: buildBody(),
+      body:
+          isLoading ? Center(child: CircularProgressIndicator()) : buildBody(),
     );
   }
 
@@ -83,14 +85,22 @@ class _AddScreenState extends State<AddScreen> {
             if (dropDownItems.isEmpty) {
               showPopup(context);
             } else {
-              navigatorPush(context, AddAccountScreen());
+              navigatorPush(
+                  context,
+                  AddAccountScreen(
+                    dropDownItems: dropDownItems,
+                  ));
             }
             break;
           case 2:
             if (dropDownItems.isEmpty) {
               showPopup(context);
             } else {
-              navigatorPush(context, AddDeviceScreen());
+              navigatorPush(
+                  context,
+                  AddDeviceScreen(
+                    dropDownItems: dropDownItems,
+                  ));
             }
             break;
           case 3:
@@ -144,11 +154,17 @@ class _AddScreenState extends State<AddScreen> {
   }
 
   void showLoadingDialog() {
-    Dialogs.showLoadingDialog(context, _keyLoader);
+    setState(() {
+      isLoading = true;
+    });
+    // Dialogs.showLoadingDialog(context, _keyLoader);
   }
 
   void hideLoadingDialog() {
-    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    setState(() {
+      isLoading = false;
+    });
+    // Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
   }
 
   Future<void> publishMessage(String topic, String message) async {

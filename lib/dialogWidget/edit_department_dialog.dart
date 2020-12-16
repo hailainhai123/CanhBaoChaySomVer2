@@ -147,7 +147,7 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => Navigator.of(context).pop(false),
+                  onPressed: () => Navigator.of(context).pop(),
                   child: new Text(
                     'Hủy',
                   ),
@@ -196,6 +196,7 @@ class _EditDepartmentDialogState extends State<EditDepartmentDialog> {
           Expanded(
             child: FlatButton(
               onPressed: () {
+                widget.editCallback('abc');
                 Navigator.pop(context);
               },
               child: Text('Hủy'),
