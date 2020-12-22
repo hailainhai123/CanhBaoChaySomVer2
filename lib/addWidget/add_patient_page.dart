@@ -121,6 +121,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
           'Thêm bệnh nhân',
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
       body: buildBody(),
     );

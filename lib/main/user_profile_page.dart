@@ -10,7 +10,6 @@ import 'package:health_care/model/department.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/navigator.dart';
 import 'package:health_care/response/device_response.dart';
-import 'package:health_care/response/user_response.dart';
 
 import '../helper/constants.dart' as Constants;
 
@@ -176,11 +175,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   new FlatButton(
                     onPressed: () {
                       setState(() {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (BuildContext context) => LoginPage()),
-                          (route) => false,
-                        );
+                        navigatorPushAndRemoveUntil(context, LoginPage());
                       });
                     },
                     child: new Text('Đồng ý'),

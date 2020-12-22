@@ -134,7 +134,11 @@ class _LoginPageState extends State<LoginPage> {
 
     if (mqttClientWrapper.connectionState ==
         MqttCurrentConnectionState.CONNECTED) {
-      mqttClientWrapper.login(user);
+      if (switchValue) {
+        mqttClientWrapper.patientLogin(user);
+      } else {
+        mqttClientWrapper.login(user);
+      }
     } else {
       await initMqtt();
       mqttClientWrapper.login(user);
@@ -171,13 +175,13 @@ class _LoginPageState extends State<LoginPage> {
       await sharedPrefsHelper.addBoolToSF('login', true);
       await sharedPrefsHelper.addIntToSF('quyen', responseMap['quyen']);
       if (switchValue) {
-        navigatorPush(
+        navigatorPushAndRemoveUntil(
             context,
             PatientPage(
               title: 'Patient Page',
             ));
       } else {
-        navigatorPush(
+        navigatorPushAndRemoveUntil(
           context,
           HomeScreen(
             loginResponse: responseMap,
@@ -323,7 +327,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-          Text('Hoặc'),
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
@@ -350,24 +353,6 @@ class _LoginPageState extends State<LoginPage> {
       child: Row(
         children: <Widget>[
           Expanded(
-            flex: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Color(0xff1959a9),
-                borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(5),
-                    topLeft: Radius.circular(5)),
-              ),
-              alignment: Alignment.center,
-              child: Text('f',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 25,
-                      fontWeight: FontWeight.w400)),
-            ),
-          ),
-          Expanded(
-            flex: 5,
             child: Container(
               decoration: BoxDecoration(
                 color: Color(0xff2872ba),
@@ -422,26 +407,37 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _title() {
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-          text: 'H',
-          style: GoogleFonts.portLligatSans(
-            textStyle: Theme.of(context).textTheme.display1,
-            fontSize: 30,
-            fontWeight: FontWeight.w700,
-            color: Colors.blueAccent,
-          ),
-          children: [
-            TextSpan(
-              text: 'ealth',
-              style: TextStyle(color: Colors.black, fontSize: 30),
-            ),
-            TextSpan(
-              text: 'Care',
-              style: TextStyle(color: Colors.blueAccent, fontSize: 30),
-            ),
-          ]),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.add_circle_outline,
+          size: 40,
+          color: Colors.red,
+        ),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+              text: 'H',
+              style: GoogleFonts.portLligatSans(
+                textStyle: Theme.of(context).textTheme.display1,
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                color: Colors.blueAccent,
+              ),
+              children: [
+                TextSpan(
+                  text: 'ealth',
+                  style: TextStyle(color: Colors.black, fontSize: 30),
+                ),
+                TextSpan(
+                  text: 'Care',
+                  style: TextStyle(color: Colors.blueAccent, fontSize: 30),
+                ),
+              ]),
+        ),
+      ],
     );
   }
 

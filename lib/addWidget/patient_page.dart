@@ -3,15 +3,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:health_care/chart/animated_line_chart.dart';
-import 'package:health_care/chart/area_line_chart.dart';
 import 'package:health_care/chart/line_chart.dart';
-import 'package:health_care/common/pair.dart';
 import 'package:health_care/login/login_page.dart';
 import 'package:health_care/model/patient.dart';
 import 'package:health_care/model/user.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
+import '../navigator.dart';
 import 'fake_chart_series.dart';
 
 class PatientPage extends StatefulWidget {
@@ -24,7 +24,6 @@ class PatientPage extends StatefulWidget {
 }
 
 class _PatientPageState extends State<PatientPage> with FakeChartSeries {
-  int chartIndex = 0;
   MQTTClientWrapper mqttClientWrapper;
   User registerUser;
   Patient tempPatient = Patient(
@@ -33,7 +32,7 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
     '099999999',
     'HN',
     'IVNR1000001',
-    '1',
+    '101',
     '5',
     'Sốt Virus',
     39.0,
@@ -65,6 +64,37 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
   Widget _appBar() {
     return AppBar(
       title: Text("Thông tin bệnh nhân"),
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      actions: [
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: new Text('Bạn muốn đăng xuất ?'),
+                    // content: new Text('Bạn muốn thoát ứng dụng?'),
+                    actions: <Widget>[
+                      new FlatButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: new Text('Hủy'),
+                      ),
+                      new FlatButton(
+                        onPressed: () {
+                          setState(() {
+                            navigatorPushAndRemoveUntil(context, LoginPage());
+                          });
+                        },
+                        child: new Text('Đồng ý'),
+                      ),
+                    ],
+                  );
+                });
+          },
+        ),
+      ],
     );
   }
 
@@ -75,30 +105,20 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
 
     LineChart chart;
 
-    timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
-      print('_PatientPageState.buildTimer');
-      minute += 10;
-      line1[DateTime.now().subtract(Duration(minutes: 50))] = 15.0;
-      line1[DateTime.now().subtract(Duration(minutes: 60))] = 15.0;
-      line1[DateTime.now().subtract(Duration(minutes: 70))] = 15.0;
-      line1[DateTime.now().subtract(Duration(minutes: 80))] = 15.0;
-      line1[DateTime.now().subtract(Duration(minutes: 90))] = 15.0;
-      setState(() {});
-    });
+    // timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+    //   print('_PatientPageState.buildTimer');
+    //   minute += 10;
+    //   line1[DateTime.now().subtract(Duration(minutes: 50))] = 15.0;
+    //   line1[DateTime.now().subtract(Duration(minutes: 60))] = 15.0;
+    //   line1[DateTime.now().subtract(Duration(minutes: 70))] = 15.0;
+    //   line1[DateTime.now().subtract(Duration(minutes: 80))] = 15.0;
+    //   line1[DateTime.now().subtract(Duration(minutes: 90))] = 15.0;
+    //   setState(() {});
+    // });
 
-    if (chartIndex == 0) {
-      chart = LineChart.fromDateTimeMaps(
-          [line1, line2], [Colors.green, Colors.blue], ['C', 'C'],
-          tapTextFontWeight: FontWeight.w400);
-    } else if (chartIndex == 1) {
-      chart = LineChart.fromDateTimeMaps(
-          [createLineAlmostSaveValues()], [Colors.green], ['C'],
-          tapTextFontWeight: FontWeight.w400);
-    } else {
-      chart = AreaLineChart.fromDateTimeMaps(
-          [line1], [Colors.red.shade900], ['C'],
-          gradients: [Pair(Colors.yellow.shade400, Colors.red.shade700)]);
-    }
+    chart = LineChart.fromDateTimeMaps(
+        [line1, line2], [Colors.green, Colors.blue], ['C', 'C'],
+        tapTextFontWeight: FontWeight.w400);
 
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -109,10 +129,9 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
             height: height,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 buildPatientInfo(),
-                buildTempLayout(tempPatient.nhietdo),
+                tempContainer(tempPatient.nhietdo),
                 buildChart(chart),
               ],
             ),
@@ -124,8 +143,9 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
 
   Widget buildPatientInfo() {
     return Container(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             '${tempPatient.tenDecode}',
@@ -134,8 +154,98 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
               fontWeight: FontWeight.bold,
             ),
           ),
+          SizedBox(
+            height: 10,
+          ),
+          Container(
+            child: Column(
+              children: [
+                buildLabel(),
+                buildData(),
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget buildLabel() {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.yellow,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: Row(
+        children: [
+          buildTextLabel('Khoa', 1),
+          verticalLine(),
+          buildTextLabel('Phòng', 1),
+          verticalLine(),
+          buildTextLabel('Giường', 1),
+        ],
+      ),
+    );
+  }
+
+  Widget buildData() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+        border: Border.all(color: Colors.grey),
+      ),
+      height: 40,
+      child: Row(
+        children: [
+          buildTextData('${tempPatient.makhoa}', 1),
+          verticalLine(),
+          buildTextData(tempPatient.phong, 1),
+          verticalLine(),
+          buildTextData(tempPatient.giuong, 1),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTextLabel(String data, int flexValue) {
+    return Expanded(
+      child: Text(
+        data,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      flex: flexValue,
+    );
+  }
+
+  Widget buildTextData(String data, int flexValue) {
+    return Expanded(
+      child: Text(
+        data,
+        style: TextStyle(fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
+      flex: flexValue,
+    );
+  }
+
+  Widget verticalLine() {
+    return Container(
+      height: double.infinity,
+      width: 1,
+      color: Colors.grey,
+    );
+  }
+
+  Widget horizontalLine() {
+    return Container(
+      height: 1,
+      width: double.infinity,
+      color: Colors.grey,
     );
   }
 
@@ -170,8 +280,53 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
     );
   }
 
+  Widget tempContainer(double temp) {
+    double value = temp / 42;
+    print('_PatientPageState.tempContainer $value');
+    Color tempColor = getTempColor(temp);
+    return Container(
+      child: CircularPercentIndicator(
+        radius: 120.0,
+        lineWidth: 10.0,
+        percent: value,
+        center: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/thermometer.png',
+              color: tempColor,
+              width: 25,
+              height: 25,
+            ),
+            SizedBox(width: 5),
+            Text(
+              '$temp',
+              style: TextStyle(
+                color: tempColor,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        progressColor: tempColor,
+      ),
+    );
+  }
+
+  Color getTempColor(double temp) {
+    if (temp < 37.5) {
+      return Colors.green;
+    } else if (temp >= 37.5 && temp < 38.5) {
+      return Colors.yellow;
+    }
+    return Colors.red;
+  }
+
   Widget buildChart(LineChart chart) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      height: 300,
       child: Expanded(
         child: Column(
             mainAxisSize: MainAxisSize.max,
@@ -180,68 +335,20 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    FlatButton(
-                      shape: RoundedRectangleBorder(
-                          side: BorderSide(color: Colors.black45),
-                          borderRadius: BorderRadius.all(Radius.circular(3))),
-                      child: Text(
-                        'LineChart',
-                        style: TextStyle(
-                            color: chartIndex == 0
-                                ? Colors.black
-                                : Colors.black12),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          chartIndex = 0;
-                        });
-                      },
-                    ),
-                    FlatButton(
-                      shape: RoundedRectangleBorder(
-                          side: BorderSide(color: Colors.black45),
-                          borderRadius: BorderRadius.all(Radius.circular(3))),
-                      child: Text('LineChart2',
-                          style: TextStyle(
-                              color: chartIndex == 1
-                                  ? Colors.black
-                                  : Colors.black12)),
-                      onPressed: () {
-                        setState(() {
-                          chartIndex = 1;
-                        });
-                      },
-                    ),
-                    FlatButton(
-                      shape: RoundedRectangleBorder(
-                          side: BorderSide(color: Colors.black45),
-                          borderRadius: BorderRadius.all(Radius.circular(3))),
-                      child: Text('AreaChart',
-                          style: TextStyle(
-                              color: chartIndex == 2
-                                  ? Colors.black
-                                  : Colors.black12)),
-                      onPressed: () {
-                        setState(() {
-                          chartIndex = 2;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+              ),
+              Text(
+                'Lịch sử nhiệt độ',
+                style: TextStyle(fontSize: 18),
               ),
               Expanded(
-                  child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: AnimatedLineChart(
-                  chart,
-                  key: UniqueKey(),
-                ), //Unique key to force animations
-              )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: AnimatedLineChart(
+                    chart,
+                    key: UniqueKey(),
+                  ), //Unique key to force animations
+                ),
+              ),
               // SizedBox(width: 200, height: 50, child: Text('')),
             ]),
       ),
