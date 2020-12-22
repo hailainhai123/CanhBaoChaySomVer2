@@ -24,7 +24,6 @@ class AddScreen extends StatefulWidget {
 
 class _AddScreenState extends State<AddScreen> {
   static const GET_DEPARTMENT = 'loginkhoa';
-  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
   MQTTClientWrapper mqttClientWrapper;
   SharedPrefsHelper sharedPrefsHelper;
@@ -70,11 +69,17 @@ class _AddScreenState extends State<AddScreen> {
       child: Column(
         children: [
           buildButton('Thêm khoa', Icons.meeting_room_outlined, 3),
+          horizontalLine(),
           buildButton('Thêm tài khoản', Icons.account_box_outlined, 1),
+          horizontalLine(),
           buildButton('Thêm thiết bị', Icons.devices, 2),
         ],
       ),
     );
+  }
+
+  Widget horizontalLine() {
+    return Container(height: 1, width: double.infinity, color: Colors.grey);
   }
 
   Widget buildButton(String text, IconData icon, int option) {
@@ -110,20 +115,38 @@ class _AddScreenState extends State<AddScreen> {
       },
       child: Container(
         height: 80,
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.blue,
-          borderRadius: BorderRadius.circular(
-            10,
-          ),
+          color: Colors.transparent,
+          // borderRadius: BorderRadius.circular(
+          //   10,
+          // ),
+          // border: Border.all(
+          //   color: Colors.grey,
+          // ),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.transparent,
+          //     offset: Offset(0.0, 0.1), //(x,y)
+          //     blurRadius: 6.0,
+          //   )
+          // ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            SizedBox(
+              width: 10,
+            ),
             Icon(
-              Icons.add,
+              icon,
               size: 25,
+            ),
+            SizedBox(
+              width: 10,
             ),
             Text(
               text,
@@ -131,8 +154,9 @@ class _AddScreenState extends State<AddScreen> {
                 fontSize: 25,
               ),
             ),
+            Spacer(),
             Icon(
-              icon,
+              Icons.arrow_forward_ios,
               size: 25,
             ),
           ],
