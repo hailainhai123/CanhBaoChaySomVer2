@@ -346,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/logo_techno.png'),
+                  Image.asset('assets/images/techno_me.png'),
                   SizedBox(
                     width: 10,
                   ),
