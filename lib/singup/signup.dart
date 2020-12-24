@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:health_care/Widget/bezierContainer.dart';
+import 'package:health_care/helper/loader.dart';
 import 'package:health_care/login/login_page.dart';
 import 'package:health_care/model/user.dart';
 
@@ -351,16 +352,6 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _showToast(BuildContext context) {
-    final scaffold = Scaffold.of(context);
-    final snackBar = SnackBar(
-      content: Text('Đăng ký thất bại!'),
-      action: SnackBarAction(
-        label: 'Quay lại',
-        onPressed: () {
-          // Some code to undo the change.
-        },
-      ),
-    );
-    scaffold.showSnackBar(snackBar);
+    Dialogs.showAlertDialog(context, 'Đăng ký thất bại, vui lòng thử lại sau!');
   }
 }

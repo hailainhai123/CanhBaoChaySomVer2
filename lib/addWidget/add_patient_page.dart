@@ -144,20 +144,20 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTextField(
-                  'Mã bệnh nhân',
+                  'Mã bệnh nhân *',
                   Icon(Icons.email),
                   TextInputType.text,
                   idPatientController,
                 ),
                 buildTextField(
-                  'Tên',
+                  'Tên *',
                   Icon(Icons.email),
                   TextInputType.text,
                   nameController,
                 ),
                 buildDepartment(),
                 buildTextField(
-                  'Phòng',
+                  'Phòng *',
                   Icon(Icons.perm_identity),
                   TextInputType.text,
                   roomController,
@@ -247,7 +247,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         children: [
           Expanded(
               child: Text(
-            'Thiết bị',
+            'Thiết bị *',
             style: TextStyle(fontSize: 16),
           )),
           Expanded(
@@ -291,17 +291,25 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: FlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Hủy'),
-            ),
-          ),
+          // Expanded(
+          //   child: FlatButton(
+          //     onPressed: () {
+          //       Navigator.pop(context);
+          //     },
+          //     child: Text('Hủy'),
+          //   ),
+          // ),
           Expanded(
             child: RaisedButton(
               onPressed: () {
+                if (idPatientController.text.isEmpty ||
+                    nameController.text.isEmpty ||
+                    currentSelectedValue.isEmpty ||
+                    roomController.text.isEmpty) {
+                  Dialogs.showAlertDialog(
+                      context, 'Vui lòng nhập đủ thông tin bắt buộc!');
+                  return;
+                }
                 Patient p = Patient(
                   idPatientController.text,
                   utf8.encode(nameController.text).toString(),

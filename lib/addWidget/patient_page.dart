@@ -6,6 +6,7 @@ import 'package:health_care/chart/animated_line_chart.dart';
 import 'package:health_care/chart/line_chart.dart';
 import 'package:health_care/login/login_page.dart';
 import 'package:health_care/model/patient.dart';
+import 'package:health_care/model/patient_response.dart';
 import 'package:health_care/model/user.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -15,9 +16,9 @@ import '../navigator.dart';
 import 'fake_chart_series.dart';
 
 class PatientPage extends StatefulWidget {
-  PatientPage({Key key, this.title}) : super(key: key);
+  final PatientResponse patientResponse;
 
-  final String title;
+  PatientPage({Key key, this.patientResponse}) : super(key: key);
 
   @override
   _PatientPageState createState() => _PatientPageState();
@@ -26,20 +27,7 @@ class PatientPage extends StatefulWidget {
 class _PatientPageState extends State<PatientPage> with FakeChartSeries {
   MQTTClientWrapper mqttClientWrapper;
   User registerUser;
-  Patient tempPatient = Patient(
-    'BN11021',
-    'Tên bệnh nhân',
-    '099999999',
-    'HN',
-    'IVNR1000001',
-    '101',
-    '5',
-    'Sốt Virus',
-    39.0,
-    'PS1',
-    '1',
-    '',
-  );
+  Patient tempPatient;
 
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -50,6 +38,8 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
 
   @override
   void initState() {
+    tempPatient = widget.patientResponse.patients[0];
+    tempPatient.nhietdo = 38.5;
     _idController.text = tempPatient.mabenhnhan;
     _nameController.text = tempPatient.ten;
     _informationController.text = tempPatient.mathietbi;
@@ -155,7 +145,7 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
             ),
           ),
           SizedBox(
-            height: 10,
+            height: 20,
           ),
           Container(
             child: Column(
@@ -286,8 +276,8 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
     Color tempColor = getTempColor(temp);
     return Container(
       child: CircularPercentIndicator(
-        radius: 120.0,
-        lineWidth: 10.0,
+        radius: 180.0,
+        lineWidth: 15.0,
         percent: value,
         center: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -382,7 +372,6 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
 
   @override
   void dispose() {
-    timer.cancel();
     super.dispose();
   }
 }

@@ -72,12 +72,12 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   nameController,
                 ),
                 buildTextField(
-                  'Mã thiết bị',
+                  'Mã thiết bị *',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
                   idController,
                 ),
-                buildDepartment('Khoa'),
+                buildDepartment('Khoa *'),
                 buildButton(),
               ],
             ),
@@ -139,15 +139,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                ThietBi tb = ThietBi(
-                  idController.text,
-                  currentSelectedValue,
-                  '',
-                  '',
-                  '',
-                  Constants.mac,
-                );
-                publishMessage('registerthietbi', jsonEncode(tb));
+                tryAdd();
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -156,6 +148,22 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         ],
       ),
     );
+  }
+
+  void tryAdd() {
+    if (idController.text.isEmpty || currentSelectedValue.isEmpty) {
+      Dialogs.showAlertDialog(context, 'Vui lòng nhập đủ thông tin!');
+      return;
+    }
+    ThietBi tb = ThietBi(
+      idController.text,
+      currentSelectedValue,
+      '',
+      '',
+      '',
+      Constants.mac,
+    );
+    publishMessage('registerthietbi', jsonEncode(tb));
   }
 
   Widget buildDepartment(String label) {

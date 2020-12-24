@@ -82,13 +82,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTextField(
-                  'Username',
+                  'Username *',
                   Icon(Icons.email),
                   TextInputType.text,
                   usernameController,
                 ),
                 buildTextField(
-                  'Mật khẩu',
+                  'Mật khẩu *',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
                   passwordController,
@@ -174,18 +174,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                User user = User(
-                  Constants.mac,
-                  usernameController.text,
-                  passwordController.text,
-                  utf8.encode(nameController.text).toString(),
-                  phoneController.text,
-                  utf8.encode(addressController.text).toString(),
-                  currentSelectedValue,
-                  permission,
-                  '',
-                );
-                publishMessage('registeruser', jsonEncode(user));
+                tryRegisterUser();
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -194,6 +183,26 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ],
       ),
     );
+  }
+
+  void tryRegisterUser() {
+    if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
+      Dialogs.showAlertDialog(context, 'Vui lòng nhập đủ thông tin bắt buộc!');
+      return;
+    }
+
+    User user = User(
+      Constants.mac,
+      usernameController.text,
+      passwordController.text,
+      utf8.encode(nameController.text).toString(),
+      phoneController.text,
+      utf8.encode(addressController.text).toString(),
+      currentSelectedValue,
+      permission,
+      '',
+    );
+    publishMessage('registeruser', jsonEncode(user));
   }
 
   Widget buildDepartment(String label) {

@@ -12,7 +12,7 @@ class Patient {
   double nhietdo;
   String makhoa;
   String mac;
-  String trangthai;
+  String trangthaibn;
 
   Patient(
     this.mabenhnhan,
@@ -25,7 +25,7 @@ class Patient {
     this.benhan,
     this.nhietdo,
     this.makhoa,
-    this.trangthai,
+    this.trangthaibn,
     this.mac,
   );
 
@@ -40,7 +40,7 @@ class Patient {
         'benhan': benhan,
         'nhietdo': nhietdo,
         'makhoa': makhoa,
-        'trangthai': trangthai,
+        'trangthaibn': trangthaibn,
         'mac': mac,
       };
 
@@ -54,7 +54,7 @@ class Patient {
         giuong = json['giuong'],
         benhan = json['benhan'],
         nhietdo = json['nhietdo'],
-        trangthai = json['trangthai'],
+        trangthaibn = json['trangthaibn'],
         mac = json['mac'],
         makhoa = json['makhoa'];
 
@@ -108,6 +108,6 @@ class Patient {
 
   @override
   String toString() {
-    return '$mabenhnhan-$ten-$sdt-$nha-$mathietbi-$nhietdo-$phong-$giuong-$benhan-$makhoa-$mac-$trangthai';
+    return '$mabenhnhan-$ten-$sdt-$nha-$mathietbi-$nhietdo-$phong-$giuong-$benhan-$makhoa-$mac-$trangthaibn';
   }
 }

@@ -9,6 +9,7 @@ import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/main/home_screen.dart';
+import 'package:health_care/model/patient_response.dart';
 import 'package:health_care/model/user.dart';
 import 'package:health_care/navigator.dart';
 import 'package:health_care/response/device_response.dart';
@@ -126,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       playerid = await status.subscriptionStatus.userId;
     } catch (e) {
-      print('_LoginPageState._tryLogin erorr: ${e.toString()}');
+      print('_LoginPageState._tryLogin error: ${e.toString()}');
     }
     print('_LoginPageState.initOneSignal playerID: $playerid');
     User user = User(Constants.mac, _emailController.text,
@@ -175,11 +176,18 @@ class _LoginPageState extends State<LoginPage> {
       await sharedPrefsHelper.addBoolToSF('login', true);
       await sharedPrefsHelper.addIntToSF('quyen', responseMap['quyen']);
       if (switchValue) {
-        navigatorPushAndRemoveUntil(
-            context,
-            PatientPage(
-              title: 'Patient Page',
-            ));
+        final response = patientResponseFromJson(message);
+        if (response.patients.length > 0) {
+          if (response.patients[0].trangthaibn == '1') {
+            Dialogs.showAlertDialog(context, 'Bệnh nhân đã ra viện!');
+          } else {
+            navigatorPushAndRemoveUntil(
+                context,
+                PatientPage(
+                  patientResponse: response,
+                ));
+          }
+        }
       } else {
         navigatorPushAndRemoveUntil(
           context,
@@ -195,17 +203,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showToast(BuildContext context) {
-    final scaffold = Scaffold.of(_keyLoader.currentContext);
-    final snackBar = SnackBar(
-      content: Text('Đăng nhập thất bại!'),
-      action: SnackBarAction(
-        label: 'Quay lại',
-        onPressed: () {
-          // Some code to undo the change.
-        },
-      ),
-    );
-    scaffold.showSnackBar(snackBar);
+    Dialogs.showAlertDialog(
+        context, 'Đăng nhập thất bại, vui lòng thử lại sau!');
   }
 
   Widget _backButton() {
@@ -252,23 +251,6 @@ class _LoginPageState extends State<LoginPage> {
                   filled: true))
         ],
       ),
-    );
-  }
-
-  Widget _saveSwitch() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        Text("Lưu tài khoản"),
-        Switch(
-          value: this._switchValue,
-          onChanged: (value) {
-            setState(() {
-              _switchValue = !_switchValue;
-            });
-          },
-        )
-      ],
     );
   }
 
@@ -361,11 +343,22 @@ class _LoginPageState extends State<LoginPage> {
                     topRight: Radius.circular(5)),
               ),
               alignment: Alignment.center,
-              child: Text('TechNo M&E',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/logo_techno.png'),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    'TechNo M&E',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -485,7 +478,7 @@ class _LoginPageState extends State<LoginPage> {
                       switchContainer(),
                       _divider(),
                       _facebookButton(),
-                      _createAccountLabel(),
+                      // _createAccountLabel(),
                     ],
                   ),
                 ),

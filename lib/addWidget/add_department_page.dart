@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
@@ -78,13 +79,13 @@ class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildTextField(
-                  'Tên khoa',
+                  'Tên khoa *',
                   Icon(Icons.email),
                   TextInputType.text,
                   nameController,
                 ),
                 buildTextField(
-                  'Mã khoa',
+                  'Mã khoa *',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
                   idController,
@@ -150,12 +151,7 @@ class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
           Expanded(
             child: RaisedButton(
               onPressed: () {
-                Department department = Department(
-                  utf8.encode(nameController.text).toString(),
-                  idController.text,
-                  Constants.mac,
-                );
-                publishMessage('registerkhoa', jsonEncode(department));
+                tryRegister();
               },
               color: Colors.blue,
               child: Text('Lưu'),
@@ -164,6 +160,20 @@ class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
         ],
       ),
     );
+  }
+
+  void tryRegister(){
+    if(nameController.text.isEmpty || idController.text.isEmpty){
+      Dialogs.showAlertDialog(
+          context, 'Vui lòng nhập đủ thông tin!');
+      return;
+    }
+    Department department = Department(
+      utf8.encode(nameController.text).toString(),
+      idController.text,
+      Constants.mac,
+    );
+    publishMessage('registerkhoa', jsonEncode(department));
   }
 
   @override
