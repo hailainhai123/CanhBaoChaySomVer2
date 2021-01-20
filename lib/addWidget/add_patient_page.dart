@@ -84,11 +84,13 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         print('_DeviceListScreenState.handleDevice ${dropDownItems.length}');
         break;
       case ADD_PATIENT:
-        navigatorPush(
-            context,
-            HomeScreen(
-              index: 1,
-            ));
+        Dialogs.showAlertDialog(
+            context, 'Thêm thành công!');
+        // navigatorPush(
+        //     context,
+        //     HomeScreen(
+        //       index: 1,
+        //     ));
         break;
       case LOGIN_DEVICE:
         tbs = response.id.map((e) => ThietBi.fromJson(e)).toList();
