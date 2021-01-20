@@ -86,7 +86,7 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text('Danh sách thiết bị'),
+          title: Text('Danh sách khoa'),
           centerTitle: true,
         ),
         body: isLoading

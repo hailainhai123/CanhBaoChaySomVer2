@@ -197,7 +197,7 @@ class _DetailPageState extends State<DetailPage>
                   verticalLine(),
                   buildTextData(patients[index].giuong, 2),
                   verticalLine(),
-                  buildTextData(patients[index].tenDecode, 15),
+                  buildNameContainer(patients[index].tenDecode, 15),
                   verticalLine(),
                   tempData(patients[index].nhietdo.toString(), 4),
                 ],
@@ -227,6 +227,19 @@ class _DetailPageState extends State<DetailPage>
         data,
         style: TextStyle(fontSize: 18),
         textAlign: TextAlign.center,
+      ),
+      flex: flexValue,
+    );
+  }
+
+  Widget buildNameContainer(String data, int flexValue) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.only(left: 5),
+        child: Text(
+          data,
+          style: TextStyle(fontSize: 18),
+        ),
       ),
       flex: flexValue,
     );

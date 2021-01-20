@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:health_care/addWidget/add_page.dart';
 import 'package:health_care/addWidget/add_patient_page.dart';
+import 'package:health_care/helper/bottom_navigation_bar.dart';
+import 'package:health_care/helper/constants.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/main/department_list_screen.dart';
 import 'package:health_care/main/detail_page.dart';
@@ -31,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static List<Widget> _widgetOptions = List();
   static List<BottomNavigationBarItem> bottomBarItems = List();
+  static List<CustomBottomNavigationItem> items = List();
 
   @override
   void initState() {
@@ -49,7 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void getPermission() async {
     quyen = await sharedPrefsHelper.getIntValuesSF('quyen');
-    print('_HomeScreenState.getPermission ${quyen.runtimeType} - $_selectedIndex');
+    print(
+        '_HomeScreenState.getPermission ${quyen.runtimeType} - $_selectedIndex');
     initBottomBarItems(quyen);
     initWidgetOptions(quyen);
     sharedPrefsHelper.addStringToSF('khoa', loginResponse['khoa']);
@@ -88,6 +92,17 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Cá nhân',
           ),
         ];
+
+        items = [
+          CustomBottomNavigationItem(
+              icon: Icons.account_circle_outlined, label: 'Tài khoản'),
+          CustomBottomNavigationItem(icon: Icons.menu, label: 'Thiết bị'),
+          CustomBottomNavigationItem(
+              icon: Icons.meeting_room_outlined, label: 'Khoa'),
+          CustomBottomNavigationItem(icon: Icons.add, label: 'Thêm'),
+          CustomBottomNavigationItem(
+              icon: Icons.account_box_outlined, label: 'Cá nhân'),
+        ];
         break;
       case 2:
         bottomBarItems = [
@@ -113,6 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             label: 'Cá nhân',
           ),
+        ];
+
+        items = [
+          CustomBottomNavigationItem(icon: Icons.details, label: 'Cảnh báo'),
+          CustomBottomNavigationItem(icon: Icons.menu, label: 'Danh sách'),
+          CustomBottomNavigationItem(icon: Icons.add, label: 'Thêm'),
+          CustomBottomNavigationItem(
+              icon: Icons.account_box_outlined, label: 'Cá nhân'),
         ];
         break;
     }
@@ -183,11 +206,41 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: BottomNavigationBar(
         showSelectedLabels: true,
-        showUnselectedLabels: true,
+        showUnselectedLabels: false,
         items: bottomBarItems,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.white,
         onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  Widget buildBottomNavigator(int currentIndex) {
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: 200),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
+        child: Card(
+          elevation: 5,
+          color: BACKGROUND_COLOR,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            height: 60,
+            child: CustomBottomNavigationBar(
+              selectedItemColor: FORE_TEXT_COLOR,
+              overlayColor: PRIMARY_COLOR,
+              currentIndex: currentIndex,
+              backgroundColor: Colors.transparent,
+              onChange: (index) {
+                _selectedIndex = index;
+                // changePageViewPage(index);
+              },
+              children: items,
+            ),
+          ),
+        ),
       ),
     );
   }

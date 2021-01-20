@@ -17,12 +17,29 @@ const int EDIT_DEVICE = 2;
 
 final String defaultMarkerId = "1";
 
+const Color PRIMARY_COLOR = Color(0xff222831);
+const Color BACKGROUND_COLOR = Color(0xffeeeeee);
+const Color FOREGROUND_COLOR = Color(0xffC94D49);
+const Color PRICE_COLOR_PRIMARY = FOREGROUND_COLOR;
+const Color PRICE_COLOR_ON_FORE = Color(0xfffbd46d);
+const Color PRIMARY_TEXT_COLOR = PRIMARY_COLOR;
+const Color FORE_TEXT_COLOR = BACKGROUND_COLOR;
+
+//////FOOD
+//const Color PRIMARY_COLOR = Color(0xff000000);
+//const Color BACKGROUND_COLOR = Color(0xffF7EBE8);
+//const Color FOREGROUND_COLOR = Color(0xffFACC6B);
+//const Color PRICE_COLOR_PRIMARY = Colors.red;
+//const Color PRICE_COLOR_ON_FORE = Colors.red;
+//const Color PRIMARY_TEXT_COLOR = PRIMARY_COLOR;
+//const Color FORE_TEXT_COLOR = BACKGROUND_COLOR;
+
 // final String serverUri = "test.mosquitto.org";
 // final int port = 1883;
 // final String topicName = "Dart/Mqtt_client/testtopic";
 // final String serverUri = "45.119.82.186";
- final String serverUri = "192.168.1.238";
-//final String serverUri = "192.168.2.18";
+// final String serverUri = "192.168.1.237";
+final String serverUri = "192.168.2.6";
 // final int port = 1234;
 final int port = 4567;
 final String login_topic = "loginuser";

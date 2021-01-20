@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:health_care/dialogWidget/history_page.dart';
 import 'package:health_care/helper/loader.dart';
 import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
@@ -83,6 +84,25 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          right: 0,
+          child: IconButton(
+            icon: Icon(
+              Icons.close,
+              color: Colors.black,
+            ),
+            onPressed: () {},
+          ),
+        ),
+        tabBar(),
+      ],
+    );
+  }
+
+  Widget infoTab() {
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -103,20 +123,20 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                 // ),
                 buildTextField(
                   'Mã bệnh nhân',
-                  Icon(Icons.email),
+                  Icon(Icons.vpn_key_outlined),
                   TextInputType.text,
                   idPatientController,
                 ),
                 buildTextField(
                   'Tên',
-                  Icon(Icons.email),
+                  Icon(Icons.perm_identity),
                   TextInputType.text,
                   nameController,
                 ),
                 buildDepartment(),
                 buildTextField(
                   'Phòng',
-                  Icon(Icons.perm_identity),
+                  Icon(Icons.sensor_door_outlined),
                   TextInputType.text,
                   roomController,
                 ),
@@ -128,19 +148,19 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                 ),
                 buildTextField(
                   'SĐT',
-                  Icon(Icons.vpn_key),
+                  Icon(Icons.phone),
                   TextInputType.visiblePassword,
                   phoneController,
                 ),
                 buildTextField(
                   'Địa chỉ',
-                  Icon(Icons.perm_identity),
+                  Icon(Icons.location_on),
                   TextInputType.text,
                   addressController,
                 ),
                 buildTextField(
                   'Bệnh án',
-                  Icon(Icons.perm_identity),
+                  Icon(Icons.list),
                   TextInputType.text,
                   patientController,
                 ),
@@ -216,6 +236,53 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         ),
       ),
     );
+  }
+
+  Widget tabBar() {
+    return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            bottom: TabBar(
+                unselectedLabelColor: Colors.blue,
+                indicatorSize: TabBarIndicatorSize.label,
+                indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: Colors.blueAccent),
+                tabs: [
+                  Tab(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          border:
+                              Border.all(color: Colors.blueAccent, width: 1)),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text("Lịch sử"),
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          border:
+                              Border.all(color: Colors.blueAccent, width: 1)),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text("Thông tin"),
+                      ),
+                    ),
+                  ),
+                ]),
+          ),
+          body: TabBarView(children: [
+            HistoryPage(),
+            infoTab(),
+          ]),
+        ));
   }
 
   Widget deleteButton() {

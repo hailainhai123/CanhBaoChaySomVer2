@@ -68,6 +68,7 @@ class _AddDepartmentScreenState extends State<AddDepartmentScreen> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
+        height: double.infinity,
         padding: const EdgeInsets.symmetric(
           vertical: 16,
         ),

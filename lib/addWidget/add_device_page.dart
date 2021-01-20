@@ -6,6 +6,7 @@ import 'package:health_care/helper/models.dart';
 import 'package:health_care/helper/mqttClientWrapper.dart';
 import 'package:health_care/helper/shared_prefs_helper.dart';
 import 'package:health_care/model/thietbi.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 import '../helper/constants.dart' as Constants;
 
@@ -51,10 +52,12 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
 
   Widget buildBody() {
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Container(
+        height: double.infinity,
         padding: const EdgeInsets.symmetric(
           vertical: 16,
         ),
@@ -71,7 +74,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   TextInputType.text,
                   nameController,
                 ),
-                buildTextField(
+                idDeviceContainer(
                   'Mã thiết bị *',
                   Icon(Icons.vpn_key),
                   TextInputType.visiblePassword,
@@ -82,6 +85,44 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget idDeviceContainer(String labelText, Icon prefixIcon,
+      TextInputType keyboardType, TextEditingController controller) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 44,
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        autocorrect: false,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: InputDecoration(
+          labelText: labelText,
+          // labelStyle: ,
+          // hintStyle: ,
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.green),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.red),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: 20,
+          ),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.qr_code),
+            onPressed: () async {
+              String cameraScanResult = await scanner.scan();
+              controller.text = cameraScanResult;
+            },
+          ),
+          prefixIcon: prefixIcon,
         ),
       ),
     );
