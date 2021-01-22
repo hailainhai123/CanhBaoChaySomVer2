@@ -312,6 +312,7 @@ class _HomePageState extends State<HomePage>
         setState(() {});
         hideLoadingDialog();
         await showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return Dialog(
@@ -319,18 +320,39 @@ class _HomePageState extends State<HomePage>
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditPatientDialog(
-                    patient: patients[selectedIndex],
-                    dropDownItems: dropDownItems,
-                    deleteCallback: (param) => {
-                      getPatients(),
-                      // removePatient(selectedIndex),
-                    },
-                    updateCallback: (param) => {
-                      getPatients(),
-                      // patients.removeAt(selectedIndex),
-                      // patients.insert(selectedIndex, param),
-                    },
+                  child: Stack(
+                    children: [
+                      EditPatientDialog(
+                        patient: patients[selectedIndex],
+                        dropDownItems: dropDownItems,
+                        deleteCallback: (param) => {
+                          getPatients(),
+                          // removePatient(selectedIndex),
+                        },
+                        updateCallback: (param) => {
+                          getPatients(),
+                          // patients.removeAt(selectedIndex),
+                          // patients.insert(selectedIndex, param),
+                        },
+                      ),
+                      Positioned(
+                        right: 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            getPatients();
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                              radius: 14.0,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

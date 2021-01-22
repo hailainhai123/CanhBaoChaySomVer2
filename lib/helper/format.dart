@@ -20,7 +20,7 @@ DateTime dateFromString(String value, {String format = 'dd/MM/yyyy HH:mm:ss'}) {
 	}
 }
 
-String stringFromDate(DateTime value, {String format = 'HH:mm:ss'}) {
+String stringFromDate(DateTime value, {String format = 'HH:mm:ss dd/MM/yyyy'}) {
 	try {
 		return DateFormat(format).format(value);
 	} catch (e) {

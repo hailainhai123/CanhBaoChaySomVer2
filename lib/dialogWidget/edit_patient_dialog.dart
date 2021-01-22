@@ -84,22 +84,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: 0,
-          right: 0,
-          child: IconButton(
-            icon: Icon(
-              Icons.close,
-              color: Colors.black,
-            ),
-            onPressed: () {},
-          ),
-        ),
-        tabBar(),
-      ],
-    );
+    return tabBar();
   }
 
   Widget infoTab() {
@@ -279,7 +264,9 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                 ]),
           ),
           body: TabBarView(children: [
-            HistoryPage(),
+            HistoryPage(
+              patient: widget.patient,
+            ),
             infoTab(),
           ]),
         ));

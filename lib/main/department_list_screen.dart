@@ -155,6 +155,7 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
     return InkWell(
       onTap: () async {
         await showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return Dialog(
@@ -162,20 +163,41 @@ class _DepartmentListScreenState extends State<DepartmentListScreen> {
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditDepartmentDialog(
-                    department: departments[index],
-                    editCallback: (department) {
-                      print('_DepartmentListScreenState.itemView $department');
-                      getDepartments();
-                      // departments.removeAt(index);
-                      // departments.insert(index, department);
-                      // setState(() {});
-                    },
-                    deleteCallback: (a) {
-                      getDepartments();
-                      // departments.removeAt(index);
-                      // setState(() {});
-                    },
+                  child: Stack(
+                    children: [
+                      EditDepartmentDialog(
+                        department: departments[index],
+                        editCallback: (department) {
+                          print('_DepartmentListScreenState.itemView $department');
+                          getDepartments();
+                          // departments.removeAt(index);
+                          // departments.insert(index, department);
+                          // setState(() {});
+                        },
+                        deleteCallback: (a) {
+                          getDepartments();
+                          // departments.removeAt(index);
+                          // setState(() {});
+                        },
+                      ),
+                      Positioned(
+                        right: 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            getDepartments();
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                              radius: 14.0,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

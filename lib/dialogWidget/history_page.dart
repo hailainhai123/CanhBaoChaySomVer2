@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:health_care/addWidget/fake_chart_series.dart';
 import 'package:health_care/chart/animated_line_chart.dart';
 import 'package:health_care/chart/line_chart.dart';
+import 'package:health_care/common/format.dart';
 import 'package:health_care/login/login_page.dart';
+import 'package:health_care/model/patient.dart';
 import 'package:health_care/model/user.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -13,6 +15,10 @@ import '../helper/constants.dart' as Constants;
 import '../helper/mqttClientWrapper.dart';
 
 class HistoryPage extends StatefulWidget {
+  final Patient patient;
+
+  const HistoryPage({Key key, this.patient}) : super(key: key);
+
   @override
   _HistoryPageState createState() => _HistoryPageState();
 }
@@ -22,9 +28,13 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
   User registerUser;
   Timer timer;
   int minute = 40;
+  Map<DateTime, double> line1;
+  Map<DateTime, double> line2;
 
   @override
   void initState() {
+    line1 = createLine2();
+    line2 = createLine2_2();
     mqttClientWrapper = MQTTClientWrapper(
         () => print('Success'), (message) => register(message));
     mqttClientWrapper.prepareMqttClient(Constants.mac);
@@ -33,9 +43,6 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
 
   @override
   Widget build(BuildContext context) {
-    Map<DateTime, double> line1 = createLine2();
-    Map<DateTime, double> line2 = createLine2_2();
-
     LineChart chart;
 
     chart = LineChart.fromDateTimeMaps(
@@ -51,11 +58,67 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                SizedBox(height: 10),
+                Text(
+                  widget.patient.tenDecode,
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                SizedBox(height: 10),
+                historyTableContainer(),
                 buildChart(chart),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget historyTableContainer() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        children: [
+          buildLabel(),
+          buildData(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildData() {
+    print('_HistoryPageState.buildData ${line1.length}');
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+        border: Border.all(color: Colors.grey),
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: line1.length,
+        itemBuilder: (context, index) {
+          var key = line1.keys.elementAt(index);
+          String keyDisplay = stringFromDate(key);
+          return Column(
+            children: [
+              Container(
+                height: 40,
+                child: Row(
+                  children: [
+                    buildTextData('$keyDisplay', 2),
+                    verticalLine(),
+                    buildTextData('${line1[key]} \u2103', 3),
+                  ],
+                ),
+              ),
+              horizontalLine(),
+            ],
+          );
+        },
       ),
     );
   }
@@ -71,11 +134,9 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
       ),
       child: Row(
         children: [
-          buildTextLabel('Khoa', 1),
+          buildTextLabel('Thời gian', 2),
           verticalLine(),
-          buildTextLabel('Phòng', 1),
-          verticalLine(),
-          buildTextLabel('Giường', 1),
+          buildTextLabel('Nhiệt độ', 3),
         ],
       ),
     );

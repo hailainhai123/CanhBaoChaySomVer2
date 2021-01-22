@@ -252,6 +252,7 @@ class _UserListScreenState extends State<UserListScreen> {
         });
         hideLoadingDialog();
         await showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return Dialog(
@@ -259,19 +260,40 @@ class _UserListScreenState extends State<UserListScreen> {
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditUserDialog(
-                    user: users[selectedIndex],
-                    dropDownItems: dropDownItems,
-                    deleteCallback: (param) => {
-                      getUsers(),
-                      // removeUser(selectedIndex),
-                    },
-                    updateCallback: (user) {
-                      getUsers();
-                      // users.removeAt(selectedIndex);
-                      // users.insert(selectedIndex, user);
-                      // setState(() {});
-                    },
+                  child: Stack(
+                    children: [
+                      EditUserDialog(
+                        user: users[selectedIndex],
+                        dropDownItems: dropDownItems,
+                        deleteCallback: (param) => {
+                          getUsers(),
+                          // removeUser(selectedIndex),
+                        },
+                        updateCallback: (user) {
+                          getUsers();
+                          // users.removeAt(selectedIndex);
+                          // users.insert(selectedIndex, user);
+                          // setState(() {});
+                        },
+                      ),
+                      Positioned(
+                        right: 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            getUsers();
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                              radius: 14.0,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

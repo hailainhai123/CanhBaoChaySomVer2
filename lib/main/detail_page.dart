@@ -297,6 +297,7 @@ class _DetailPageState extends State<DetailPage>
         hideLoadingDialog();
         setState(() {});
         await showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return Dialog(
@@ -304,18 +305,39 @@ class _DetailPageState extends State<DetailPage>
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditPatientDialog(
-                    patient: patients[selectedIndex],
-                    dropDownItems: dropDownItems,
-                    deleteCallback: (param) => {
-                      // removePatient(selectedIndex),
-                      getPatients(),
-                    },
-                    updateCallback: (param){
-                      getPatients();
-                      // patients.removeAt(selectedIndex),
-                      // patients.insert(selectedIndex, param),
-                    },
+                  child: Stack(
+                    children: [
+                      EditPatientDialog(
+                        patient: patients[selectedIndex],
+                        dropDownItems: dropDownItems,
+                        deleteCallback: (param) => {
+                          // removePatient(selectedIndex),
+                          getPatients(),
+                        },
+                        updateCallback: (param) {
+                          getPatients();
+                          // patients.removeAt(selectedIndex),
+                          // patients.insert(selectedIndex, param),
+                        },
+                      ),
+                      Positioned(
+                        right: 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            getPatients();
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                              radius: 14.0,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -326,7 +348,7 @@ class _DetailPageState extends State<DetailPage>
     }
   }
 
-  void getPatients() async{
+  void getPatients() async {
     pubTopic = GET_BN;
     showLoadingDialog();
     khoa = await sharedPrefsHelper.getStringValuesSF('khoa');

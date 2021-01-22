@@ -437,6 +437,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         print('_DeviceListScreenState.handleDevice ${user.toString()}');
 
         await showDialog(
+            barrierDismissible: false,
             context: context,
             builder: (BuildContext context) {
               return Dialog(
@@ -444,15 +445,36 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     borderRadius: BorderRadius.circular(10.0)),
                 //this right here
                 child: Container(
-                  child: EditUserDialog(
-                    user: user,
-                    dropDownItems: dropDownItems,
-                    deleteCallback: (param) {
-                      getInfoUser();
-                    },
-                    updateCallback: (updatedDevice) {
-                      getInfoUser();
-                    },
+                  child: Stack(
+                    children: [
+                      EditUserDialog(
+                        user: user,
+                        dropDownItems: dropDownItems,
+                        deleteCallback: (param) {
+                          getInfoUser();
+                        },
+                        updateCallback: (updatedDevice) {
+                          getInfoUser();
+                        },
+                      ),
+                      Positioned(
+                        right: 0.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            getInfoUser();
+                          },
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: CircleAvatar(
+                              radius: 14.0,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
