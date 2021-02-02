@@ -279,23 +279,38 @@ class _PatientPageState extends State<PatientPage> with FakeChartSeries {
         radius: 180.0,
         lineWidth: 15.0,
         percent: value,
-        center: Row(
+        center: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/thermometer.png',
-              color: tempColor,
-              width: 25,
-              height: 25,
-            ),
-            SizedBox(width: 5),
             Text(
-              '$temp',
+              'Nhiệt độ',
               style: TextStyle(
-                color: tempColor,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontSize: 25,
               ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Image.asset(
+                //   'assets/images/thermometer.png',
+                //   color: tempColor,
+                //   width: 25,
+                //   height: 25,
+                // ),
+                SizedBox(width: 5),
+                Text(
+                  '$temp\u2103',
+                  style: TextStyle(
+                    color: tempColor,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

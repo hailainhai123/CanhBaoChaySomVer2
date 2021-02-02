@@ -97,28 +97,31 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
             bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
         border: Border.all(color: Colors.grey),
       ),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: line1.length,
-        itemBuilder: (context, index) {
-          var key = line1.keys.elementAt(index);
-          String keyDisplay = stringFromDate(key);
-          return Column(
-            children: [
-              Container(
-                height: 40,
-                child: Row(
-                  children: [
-                    buildTextData('$keyDisplay', 2),
-                    verticalLine(),
-                    buildTextData('${line1[key]} \u2103', 3),
-                  ],
+      child: Scrollbar(
+        isAlwaysShown: true,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: line1.length,
+          itemBuilder: (context, index) {
+            var key = line1.keys.elementAt(index);
+            String keyDisplay = stringFromDate(key);
+            return Column(
+              children: [
+                Container(
+                  height: 40,
+                  child: Row(
+                    children: [
+                      buildTextData('$keyDisplay', 2),
+                      verticalLine(),
+                      buildTextData('${line1[key]} \u2103', 3),
+                    ],
+                  ),
                 ),
-              ),
-              horizontalLine(),
-            ],
-          );
-        },
+                horizontalLine(),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -255,6 +258,8 @@ class _HistoryPageState extends State<HistoryPage> with FakeChartSeries {
   }
 
   Widget buildChart(LineChart chart) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
       height: 300,

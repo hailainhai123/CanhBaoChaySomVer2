@@ -90,6 +90,7 @@ class _EditUserDialogState extends State<EditUserDialog>
         Navigator.pop(context);
         break;
       case CHANGE_PASSWORD:
+        widget.updateCallback('changePassword');
         Navigator.pop(context);
         break;
       case DELETE_USER:
@@ -358,7 +359,10 @@ class _EditUserDialogState extends State<EditUserDialog>
               ),
               actions: <Widget>[
                 new FlatButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    widget.deleteCallback('123');
+                  },
                   child: new Text(
                     'Hủy',
                   ),

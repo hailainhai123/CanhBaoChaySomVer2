@@ -72,7 +72,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     String password = await sharedPrefsHelper.getStringValuesSF('password');
     if (email.isNotEmpty && password.isNotEmpty) {
       User user = User(Constants.mac, email, password, '', '', '', '', '', '');
-      mqttClientWrapper.publishMessage('getinfouser', jsonEncode(user));
+      publishMessage('getinfouser', jsonEncode(user));
     }
     showLoadingDialog();
   }

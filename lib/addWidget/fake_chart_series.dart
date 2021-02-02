@@ -38,24 +38,52 @@ class FakeChartSeries {
 
   Map<DateTime, double> createLine2() {
     Map<DateTime, double> data = {};
-    data[DateTime.now().subtract(Duration(minutes: 40))] = 37.0;
+    data[DateTime.now().subtract(Duration(minutes: 105))] = 37.2;
+    data[DateTime.now().subtract(Duration(minutes: 100))] = 37.1;
+    data[DateTime.now().subtract(Duration(minutes: 95))] = 37.0;
+    data[DateTime.now().subtract(Duration(minutes: 90))] = 37.3;
+    data[DateTime.now().subtract(Duration(minutes: 85))] = 37.4;
+    data[DateTime.now().subtract(Duration(minutes: 80))] = 37.1;
+    data[DateTime.now().subtract(Duration(minutes: 75))] = 37.8;
+    data[DateTime.now().subtract(Duration(minutes: 70))] = 37.7;
+    data[DateTime.now().subtract(Duration(minutes: 65))] = 37.5;
+    data[DateTime.now().subtract(Duration(minutes: 60))] = 38.5;
+    data[DateTime.now().subtract(Duration(minutes: 55))] = 38.0;
+    data[DateTime.now().subtract(Duration(minutes: 50))] = 38.1;
+    data[DateTime.now().subtract(Duration(minutes: 45))] = 38.0;
+    data[DateTime.now().subtract(Duration(minutes: 40))] = 38.3;
+    data[DateTime.now().subtract(Duration(minutes: 35))] = 38.4;
     data[DateTime.now().subtract(Duration(minutes: 30))] = 37.1;
-    data[DateTime.now().subtract(Duration(minutes: 22))] = 37.3;
+    data[DateTime.now().subtract(Duration(minutes: 25))] = 37.3;
     data[DateTime.now().subtract(Duration(minutes: 20))] = 37.5;
     data[DateTime.now().subtract(Duration(minutes: 15))] = 37.9;
-    data[DateTime.now().subtract(Duration(minutes: 12))] = 40.0;
+    data[DateTime.now().subtract(Duration(minutes: 10))] = 40.0;
     data[DateTime.now().subtract(Duration(minutes: 5))] = 37.0;
     return data;
   }
 
   Map<DateTime, double> createLine2_2() {
     Map<DateTime, double> data = {};
-    data[DateTime.now().subtract(Duration(minutes: 40))] = 37.0;
+    data[DateTime.now().subtract(Duration(minutes: 105))] = 37.2;
+    data[DateTime.now().subtract(Duration(minutes: 100))] = 37.1;
+    data[DateTime.now().subtract(Duration(minutes: 95))] = 37.0;
+    data[DateTime.now().subtract(Duration(minutes: 90))] = 37.3;
+    data[DateTime.now().subtract(Duration(minutes: 85))] = 37.4;
+    data[DateTime.now().subtract(Duration(minutes: 80))] = 37.1;
+    data[DateTime.now().subtract(Duration(minutes: 75))] = 37.8;
+    data[DateTime.now().subtract(Duration(minutes: 70))] = 37.7;
+    data[DateTime.now().subtract(Duration(minutes: 65))] = 37.5;
+    data[DateTime.now().subtract(Duration(minutes: 60))] = 38.5;
+    data[DateTime.now().subtract(Duration(minutes: 55))] = 38.0;
+    data[DateTime.now().subtract(Duration(minutes: 50))] = 38.1;
+    data[DateTime.now().subtract(Duration(minutes: 45))] = 38.0;
+    data[DateTime.now().subtract(Duration(minutes: 40))] = 38.3;
+    data[DateTime.now().subtract(Duration(minutes: 35))] = 38.4;
     data[DateTime.now().subtract(Duration(minutes: 30))] = 37.1;
-    data[DateTime.now().subtract(Duration(minutes: 22))] = 37.3;
+    data[DateTime.now().subtract(Duration(minutes: 25))] = 37.3;
     data[DateTime.now().subtract(Duration(minutes: 20))] = 37.5;
     data[DateTime.now().subtract(Duration(minutes: 15))] = 37.9;
-    data[DateTime.now().subtract(Duration(minutes: 12))] = 40.0;
+    data[DateTime.now().subtract(Duration(minutes: 10))] = 40.0;
     data[DateTime.now().subtract(Duration(minutes: 5))] = 37.0;
     return data;
   }
